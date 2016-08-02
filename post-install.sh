@@ -45,9 +45,7 @@ URL_IDEA=$APP_REPO_URL/idea/$IDEA_VERSION/idea.tar.gz
 #URL_RPMFUSION_NONFREE=http://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm 
 #URL_PLEX=https://downloads.plex.tv/plex-media-server/1.0.2.2413-7caf41d/plexmediaserver-1.0.2.2413-7caf41d.x86_64.rpm
 #URL_ATOM=https://atom.io/download/rpm
-#URL_ATOM_PLUGINS=http://192.168.1.60/atom-plugins.tgz
-##URL_IDEA=https://download.jetbrains.com/idea/ideaIU-162.1447.21-no-jdk.tar.gz
-#URL_IDEA=http://192.168.1.60/repo/idea.tgz
+#URL_IDEA=https://download.jetbrains.com/idea/ideaIU-162.1447.21-no-jdk.tar.gz
 
 #Misc
 JAVA_HOME=/usr/lib/jvm/java-openjdk/bin
@@ -304,6 +302,61 @@ function java_conf {
   print_install_done "Java post-install configuration"
 }
 
+#Please don't use this in a none secured private (local) environment
+function copy_ssh_keys {
+
+  if [[ $# -ne 2 ]]; then
+    echo "Usage : copy_ssh_key <username> <url_for_ssh_keys>"	
+    exit 1	
+  fi
+
+  cd "$WORKING_DIR"
+
+  id "$1"
+
+  if [[ $? -ne 0 ]]; then 
+    print_error "User $1 does not exists !"
+    return 1
+  fi 
+
+  #get the user home 
+  user_home="$(grep "$1" /etc/passwd | cut -d ":" -f6)"
+
+  if [[ ! -s "$user_home" ]]; then
+    print_error "No home, no ssh for $1"
+    return 2
+  fi
+
+  ssh_home="$user_home"/.ssh
+
+  mkdir "$ssh_home" && chown "$1":"$1" "$ssh_home" && chmod 700 "$ssh_home"  
+
+  if [[ $? -ne 0 ]]; then 
+    print_error "Error while creating ssh directory"
+  fi
+
+  #get the keys in .tar archive
+
+  echo "debug $2"
+  
+  curl -o keys.tar "$2"
+
+  if [[ $? -ne 0 ]]; then   
+    print_download_abort "ssh keys"
+    return 3
+  fi   
+
+  tar -xf keys.tar -C "$ssh_home"
+
+   if [[ $? -ne 0 ]]; then   
+    print_install_abort "ssh keys"
+    return 4
+  fi
+  
+  print_install_done "ssh keys"
+
+}
+
 #SCRIPT BODY
 
 must_be_root
@@ -323,6 +376,8 @@ must_be_root
 #java_conf
 
 #idea
+
+copy_ssh_keys slemoine "http://$LOCAL_REPO_HOST:$LOCAL_REPO_PORT/special/keys.tar"
 
 
 
