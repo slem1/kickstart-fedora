@@ -88,6 +88,7 @@ firefox
 java-1.8.0-openjdk-devel 
 postgresql-server
 postgresql-contrib
+pgadmin3
 git
 
 #multimedia
