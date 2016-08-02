@@ -10,7 +10,7 @@ COLOR_GREEN="$(tput setaf 2)"
 COLOR_ORANGE="$(tput setaf 172)"
 
 #dir
-WORKING_DIR=/tmp
+WORKING_DIR=/var/kickstart-tmp
 INSTALL_DIR=/opt
 
 #Versions
@@ -49,6 +49,8 @@ URL_IDEA=$APP_REPO_URL/idea/$IDEA_VERSION/idea.tar.gz
 
 #Misc
 JAVA_HOME=/usr/lib/jvm/java-openjdk/bin
+IDEA_INSTALL_DIR=idea-IU-162.1447.21
+
 
 #Common functions
 function print_error {
@@ -281,7 +283,7 @@ function idea {
 
   tar -xzf idea.tgz -C "$INSTALL_DIR"/idea_install
 
-  ln -s "$INSTALL_DIR"/idea_install/"$IDEA_VERSION" "$INSTALL_DIR"/idea
+  ln -s "$INSTALL_DIR"/idea_install/"$IDEA_INSTALL_DIR" "$INSTALL_DIR"/idea
 
   print_install_done "Idea"
 
@@ -361,23 +363,25 @@ function copy_ssh_keys {
 
 must_be_root
 
-#dnf update -y
+if [[ ! -d "$WORKING_DIR" ]]; then
+  mkdir $WORKING_DIR
+fi
 
-#rpmfusion
+dnf update -y
 
-#plex
+rpmfusion
 
-#nodejs_global
+plex
 
-#atom
+nodejs_global
 
-#atom_plugins slemoine
+atom
 
-#java_conf
+atom_plugins slemoine
 
-#idea
+java_conf
+
+idea
 
 copy_ssh_keys slemoine "http://$LOCAL_REPO_HOST:$LOCAL_REPO_PORT/special/keys.tar"
-
-
 

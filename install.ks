@@ -79,6 +79,7 @@ services --enabled=sshd
 #fedora workstation
 @base-x
 @workstation-product
+nautilus
 nautilus-open-terminal
 gnome-tweak-tool
 firefox
@@ -106,5 +107,6 @@ tomboy
 calibre
 dropbox
 lsb-core-noarch #for atom
+htop
 
 %end
