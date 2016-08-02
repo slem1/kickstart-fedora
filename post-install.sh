@@ -9,19 +9,48 @@ COLOR_RED="$(tput setaf 1)"
 COLOR_GREEN="$(tput setaf 2)"
 COLOR_ORANGE="$(tput setaf 172)"
 
-#Resources
-URL_NVM=https://raw.githubusercontent.com/creationix/nvm/v0.31.3/install.sh
+#dir
+WORKING_DIR=/tmp
+INSTALL_DIR=/opt
+
+#Versions
+FEDORA_VERSION=$(rpm -E %fedora)
+IDEA_VERSION=162-EAP
+PLEX_VERSION=1.0.2
+ATOM_VERSION=1.8.0
+ATOM_PLUGINS_VERSION=1.0.0
+NVM_VERSION=0.31.3
+
+#Private repo
+LOCAL_REPO_HOST=192.168.1.60
+LOCAL_REPO_PORT=80
+APP_REPO_URL=http://$LOCAL_REPO_HOST:$LOCAL_REPO_PORT/apps
+
+#External ressources
 URL_NVM_GIT=https://github.com/creationix/nvm.git
-URL_RPMFUSION_FREE=http://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm
-URL_RPMFUSION_NONFREE=http://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm 
-URL_PLEX=https://downloads.plex.tv/plex-media-server/1.0.2.2413-7caf41d/plexmediaserver-1.0.2.2413-7caf41d.x86_64.rpm
-URL_ATOM=https://atom.io/download/rpm
-URL_ATOM_PLUGINS=http://192.168.1.60/atom-plugins.tgz
-#URL_IDEA=https://download.jetbrains.com/idea/ideaIU-162.1447.21-no-jdk.tar.gz
-URL_IDEA=http://192.168.1.60/repo/idea.tgz
 
-IDEA_VERSION=idea-IU-162.1447.21
+#Local ressources
+URL_NVM=$APP_REPO_URL/nvm/$NVM_VERSION/install.sh
+URL_RPMFUSION_FREE=$APP_REPO_URL/rpmfusion/$FEDORA_VERSION/rpmfusion-free-release-$FEDORA_VERSION.noarch.rpm
+URL_RPMFUSION_NONFREE=$APP_REPO_URL/rpmfusion/$FEDORA_VERSION/rpmfusion-nonfree-release-$FEDORA_VERSION.noarch.rpm 
+URL_PLEX=$APP_REPO_URL/plex/$PLEX_VERSION/plex.rpm
+URL_ATOM=$APP_REPO_URL/atom/$ATOM_VERSION/atom.rpm
+URL_ATOM_PLUGINS=$APP_REPO_URL/atom-plugins/$ATOM_PLUGINS_VERSION/atom-plugins.tgz
+URL_IDEA=$APP_REPO_URL/idea/$IDEA_VERSION/idea.tar.gz
 
+#Original External resources / url may be outdated
+#URL_NVM=https://raw.githubusercontent.com/creationix/nvm/v0.31.3/install.sh
+#URL_NVM_GIT=https://github.com/creationix/nvm.git
+#URL_RPMFUSION_FREE=http://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm
+#URL_RPMFUSION_NONFREE=http://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm 
+#URL_PLEX=https://downloads.plex.tv/plex-media-server/1.0.2.2413-7caf41d/plexmediaserver-1.0.2.2413-7caf41d.x86_64.rpm
+#URL_ATOM=https://atom.io/download/rpm
+#URL_ATOM_PLUGINS=http://192.168.1.60/atom-plugins.tgz
+##URL_IDEA=https://download.jetbrains.com/idea/ideaIU-162.1447.21-no-jdk.tar.gz
+#URL_IDEA=http://192.168.1.60/repo/idea.tgz
+
+#Misc
+JAVA_HOME=/usr/lib/jvm/java-openjdk/bin
 
 #Common functions
 function print_error {
@@ -51,6 +80,10 @@ function print_download_abort {
   print_error "An error occured while downloading $1, abort..."
 }
 
+function print_install_done {
+  print_success "$1 install done!"
+}
+
 function must_be_root {
   if [[ $EUID -ne 0 ]]; then
     print_error_and_exit  "This script must be run as root" 1>&2   
@@ -62,9 +95,9 @@ function must_be_root {
 #Install nvm and nodejs globally
 function nodejs_global {
 
-  nvm_dir=/opt/nvm
+  echo "Install the node version manager for all users"
 
-  echo "Install the node version manager for all users "
+  nvm_dir="$INSTALL_DIR"/nvm
   
   git clone "$URL_NVM_GIT" "$nvm_dir" && cd "$nvm_dir" && git checkout `git describe --abbrev=0 --tags` 
 
@@ -80,12 +113,12 @@ function nodejs_global {
 
   nvm install node
 
-  if [[ $? = 0 ]]; then
-    print_success "NodeJs install OK !"
-  else
+  if [[ $? -ne 0 ]]; then
     print_error "NodeJs install KO"
-    return 1
+    return 1  
   fi
+
+  print_install_done "Node JS"
 }
 
 #Install node to one user
@@ -105,8 +138,8 @@ function nodejs {
 
   logout
 
-  if [[ $? = 0 ]]; then
-    print_success "NodeJs install OK !"
+  if [[ $? -eq 0 ]]; then
+    print_install_done "Node JS"
   else
     print_error "NodeJs install KO"
     return 1
@@ -123,9 +156,10 @@ function rpmfusion {
   if [[ $? -ne 0 ]]; then
     print_error "Error while installing rpm fusion"
     return 1
-  else
-    print_success "rpm fusion install OK !"
   fi
+  
+  print_install_done "RPM Fusion"
+  
 }
 
 #install plex media server
@@ -133,7 +167,7 @@ function plex {
 
   echo "Install the plex media server"
 
-  cd /tmp/ &&  wget -O plex.rpm $URL_PLEX
+  cd "$WORKING_DIR" &&  wget -O plex.rpm $URL_PLEX
 
   if [[ $? -ne 0 ]]; then
     print_download_abort "the plex rpm"
@@ -145,20 +179,20 @@ function plex {
   if [[ $? -ne 0 ]]; then
     print_install_abort "Plex"  
     return 2
-  else 
-    print_success "Plex install OK!"
   fi 
+
+  print_install_done "Plex"
 
 }
 
-#install atom
+#Install atom editor
+#Note : Atom requires lsb-core-noarch package, please be sure that this
+#package has already been installed either manually or by kickstart packages install
 function atom {
+
   echo "Install atom"
 
-  #todo add it to the kickstart package
-  dnf install lsb-core-noarch -y
-
-  cd /tmp/ && wget -O atom.rpm $URL_ATOM
+  cd "$WORKING_DIR" && wget -O atom.rpm $URL_ATOM
   	
   if [[ $? -ne 0 ]]; then
     print_download_abort "the atom rpm"
@@ -170,29 +204,34 @@ function atom {
   if [[ $? -ne 0 ]]; then
     print_error "Error during atom installation... aborting..."  
     return 2
-  else 
-    print_success "Atom install OK!"
-  fi 
+  fi
+   
+  print_install_done "Atom"
 
 }
 
-#Install the atom plugins
-function atom_plugins {
+#Install atom additional plugins
+function atom_plugins {  
 
   echo "Install atom"
 
-  cd /tmp/ &&  wget -O atom-plugins.tgz "$URL_ATOM_PLUGINS"
+  if [[ $# -lt 1 ]]; then
+    print_error "At least one user must be specified"
+    return 1
+  fi
+
+  cd "$WORKING_DIR" &&  wget -O atom-plugins.tgz "$URL_ATOM_PLUGINS"
 
   if [[ $? -ne 0 ]]; then
     print_download_abort "the atom plugins archive"
-    return 1
+    return 2
   fi
 
   tar -xzf atom-plugins.tgz
 
   if [[ $? -ne 0 ]]; then
     print_error "Error while uncompressing archive, aborting..."
-    return 2
+    return 3
   fi 
 
   #copy the atom plugins for users
@@ -217,23 +256,24 @@ function atom_plugins {
 	mkdir "$user_home"/.atom
       fi	
     
-      cp -R /tmp/atom-plugins/* "$user_home"/.atom 
+      cp -R "$WORKING_DIR"/atom-plugins/* "$user_home"/.atom 
 
       chown -R "$user":"$user" "$user_home"/.atom
     fi
  done
 
- print_success "Atom plugins install OK!"
+ print_install_done "Atom plugins"  
 
 }
 
+#Install intellij idea
 function idea {
 
   echo "Install intellij idea"
 
-  mkdir /opt/idea_install/
+  mkdir "$INSTALL_DIR"/idea_install/
 
-  cd /tmp/ &&  wget -O idea.tgz "$URL_IDEA"  
+  cd "$WORKING_DIR" &&  wget -O idea.tgz "$URL_IDEA"  
 
   if [[ $? -ne 0 ]]; then
     print_download_abort "Idea" 
@@ -241,29 +281,27 @@ function idea {
 
   echo "Please wait while uncompressing the idea archive..."
 
-  tar -xzf idea.tgz -C /opt/idea_install
+  tar -xzf idea.tgz -C "$INSTALL_DIR"/idea_install
 
-  ln -s /opt/idea_install/"$IDEA_VERSION" /opt/idea
+  ln -s "$INSTALL_DIR"/idea_install/"$IDEA_VERSION" "$INSTALL_DIR"/idea
 
-  #clean up
-  rm /tmp/idea.tgz
+  print_install_done "Idea"
 
 }
 
-#Only played if java sdk has been already installed
+#Java SDK must be installed
 function java_conf {
 
-  if [[ -f "/etc/profile.d/java-jdk.sh" ]]; then
-    print_error "java-jdk.sh already exists"
+  if [[ -f "/etc/profile.d/java-env.sh" ]]; then
+    print_error "java-env.sh already exists"
     return 1
   fi
   
-  echo "export JAVA_HOME=/usr/lib/jvm/java-openjdk/bin" >> /etc/profile.d/java-jdk.sh	
-
-  print_success "JAVA post-install configuration OK !"
+  echo "export JAVA_HOME=$JAVA_HOME" >> /etc/profile.d/java-env.sh	
 
   source /etc/profile
 
+  print_install_done "Java post-install configuration"
 }
 
 #SCRIPT BODY
