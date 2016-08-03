@@ -77,12 +77,9 @@ services --enabled=sshd
 %packages
 
 #fedora workstation
-@base-x
-@workstation-product
-nautilus
+@^workstation-product-environment
 nautilus-open-terminal
 gnome-tweak-tool
-firefox
 
 #dev
 java-1.8.0-openjdk-devel 
