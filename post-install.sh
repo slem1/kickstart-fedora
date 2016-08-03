@@ -32,7 +32,7 @@ URL_NVM_GIT=https://github.com/creationix/nvm.git
 #Local ressources
 URL_NVM=$APP_REPO_URL/nvm/$NVM_VERSION/install.sh
 URL_RPMFUSION_FREE=$APP_REPO_URL/rpmfusion/$FEDORA_VERSION/rpmfusion-free-release-$FEDORA_VERSION.noarch.rpm
-URL_RPMFUSION_NONFREE=$APP_REPO_URL/rpmfusion/$FEDORA_VERSION/rpmfusion-nonfree-release-$FEDORA_VERSION.noarch.rpm 
+URL_RPMFUSION_NONFREE=$APP_REPO_URL/rpmfusion/$FEDORA_VERSION/rpmfusion-nonfree-release-$FEDORA_VERSION.noarch.rpm
 URL_PLEX=$APP_REPO_URL/plex/$PLEX_VERSION/plex.rpm
 URL_ATOM=$APP_REPO_URL/atom/$ATOM_VERSION/atom.rpm
 URL_ATOM_PLUGINS=$APP_REPO_URL/atom-plugins/$ATOM_PLUGINS_VERSION/atom-plugins.tgz
@@ -42,7 +42,7 @@ URL_IDEA=$APP_REPO_URL/idea/$IDEA_VERSION/idea.tar.gz
 #URL_NVM=https://raw.githubusercontent.com/creationix/nvm/v0.31.3/install.sh
 #URL_NVM_GIT=https://github.com/creationix/nvm.git
 #URL_RPMFUSION_FREE=http://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm
-#URL_RPMFUSION_NONFREE=http://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm 
+#URL_RPMFUSION_NONFREE=http://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
 #URL_PLEX=https://downloads.plex.tv/plex-media-server/1.0.2.2413-7caf41d/plexmediaserver-1.0.2.2413-7caf41d.x86_64.rpm
 #URL_ATOM=https://atom.io/download/rpm
 #URL_IDEA=https://download.jetbrains.com/idea/ideaIU-162.1447.21-no-jdk.tar.gz
@@ -57,7 +57,7 @@ function print_error {
   echo "$COLOR_RED$1$COLOR_NONE"
 }
 
-function print_warn {  
+function print_warn {
   echo "$COLOR_ORANGE$1$COLOR_NONE"
 }
 
@@ -86,7 +86,7 @@ function print_install_done {
 
 function must_be_root {
   if [[ $EUID -ne 0 ]]; then
-    print_error_and_exit  "This script must be run as root" 1>&2   
+    print_error_and_exit  "This script must be run as root" 1>&2
   fi
 }
 
@@ -98,12 +98,12 @@ function nodejs_global {
   echo "Install the node version manager for all users"
 
   nvm_dir="$INSTALL_DIR"/nvm
-  
-  git clone "$URL_NVM_GIT" "$nvm_dir" && cd "$nvm_dir" && git checkout `git describe --abbrev=0 --tags` 
+
+  git clone "$URL_NVM_GIT" "$nvm_dir" && cd "$nvm_dir" && git checkout `git describe --abbrev=0 --tags`
 
   chgrp -R dev "$nvm_dir" #anyone can use node but only dev members can install new node version
 
-  chmod 774 "$nvm_dir"  
+  chmod 774 "$nvm_dir"
 
   #unfortunaly add these lines in profile.d does not work...
   echo "export NVM_DIR=\"$nvm_dir\"" >> /etc/bashrc
@@ -115,7 +115,7 @@ function nodejs_global {
 
   if [[ $? -ne 0 ]]; then
     print_error "NodeJs install KO"
-    return 1  
+    return 1
   fi
 
   print_install_done "Node JS"
@@ -157,9 +157,9 @@ function rpmfusion {
     print_error "Error while installing rpm fusion"
     return 1
   fi
-  
+
   print_install_done "RPM Fusion"
-  
+
 }
 
 #install plex media server
@@ -177,9 +177,9 @@ function plex {
   rpm -i ./plex.rpm
 
   if [[ $? -ne 0 ]]; then
-    print_install_abort "Plex"  
+    print_install_abort "Plex"
     return 2
-  fi 
+  fi
 
   print_install_done "Plex"
 
@@ -193,7 +193,7 @@ function atom {
   echo "Install atom"
 
   cd "$WORKING_DIR" && wget -O atom.rpm $URL_ATOM
-  	
+
   if [[ $? -ne 0 ]]; then
     print_download_abort "the atom rpm"
     return 1
@@ -202,16 +202,16 @@ function atom {
   rpm -i ./atom.rpm
 
   if [[ $? -ne 0 ]]; then
-    print_error "Error during atom installation... aborting..."  
+    print_error "Error during atom installation... aborting..."
     return 2
   fi
-   
+
   print_install_done "Atom"
 
 }
 
 #Install atom additional plugins
-function atom_plugins {  
+function atom_plugins {
 
   echo "Install atom"
 
@@ -232,37 +232,37 @@ function atom_plugins {
   if [[ $? -ne 0 ]]; then
     print_error "Error while uncompressing archive, aborting..."
     return 3
-  fi 
+  fi
 
   #copy the atom plugins for users
-  for user in "$@"; do     
-    
+  for user in "$@"; do
+
     id "$user"
-    
+
     if [[ $? -ne 0 ]]; then
-      print_warn "$user user does not exist, skip it" 
+      print_warn "$user user does not exist, skip it"
       continue
     fi
 
-    #get the user home 
+    #get the user home
     user_home="$(grep "$user" /etc/passwd | cut -d ":" -f6)"
 
     if [[ ! -s "$user_home" ]]; then
       echo "No home, no atom for $user"
-    else	
-      echo "install atom plugins in $i in $user_home."           
+    else
+      echo "install atom plugins in $i in $user_home."
 
       if [[ ! -d "$user_home"/.atom ]]; then
 	mkdir "$user_home"/.atom
-      fi	
-    
-      cp -R "$WORKING_DIR"/atom-plugins/* "$user_home"/.atom 
+      fi
+
+      cp -R "$WORKING_DIR"/atom-plugins/* "$user_home"/.atom
 
       chown -R "$user":"$user" "$user_home"/.atom
     fi
  done
 
- print_install_done "Atom plugins"  
+ print_install_done "Atom plugins"
 
 }
 
@@ -273,10 +273,10 @@ function idea {
 
   mkdir "$INSTALL_DIR"/idea_install/
 
-  cd "$WORKING_DIR" &&  wget -O idea.tgz "$URL_IDEA"  
+  cd "$WORKING_DIR" &&  wget -O idea.tgz "$URL_IDEA"
 
   if [[ $? -ne 0 ]]; then
-    print_download_abort "Idea" 
+    print_download_abort "Idea"
   fi
 
   echo "Please wait while uncompressing the idea archive..."
@@ -296,8 +296,8 @@ function java_conf {
     print_error "java-env.sh already exists"
     return 1
   fi
-  
-  echo "export JAVA_HOME=$JAVA_HOME" >> /etc/profile.d/java-env.sh	
+
+  echo "export JAVA_HOME=$JAVA_HOME" >> /etc/profile.d/java-env.sh
 
   source /etc/profile
 
@@ -308,20 +308,20 @@ function java_conf {
 function copy_ssh_keys {
 
   if [[ $# -ne 2 ]]; then
-    echo "Usage : copy_ssh_key <username> <url_for_ssh_keys>"	
-    exit 1	
+    echo "Usage : copy_ssh_key <username> <url_for_ssh_keys>"
+    exit 1
   fi
 
   cd "$WORKING_DIR"
 
   id "$1"
 
-  if [[ $? -ne 0 ]]; then 
+  if [[ $? -ne 0 ]]; then
     print_error "User $1 does not exists !"
     return 1
-  fi 
+  fi
 
-  #get the user home 
+  #get the user home
   user_home="$(grep "$1" /etc/passwd | cut -d ":" -f6)"
 
   if [[ ! -s "$user_home" ]]; then
@@ -331,30 +331,28 @@ function copy_ssh_keys {
 
   ssh_home="$user_home"/.ssh
 
-  mkdir "$ssh_home" && chown "$1":"$1" "$ssh_home" && chmod 700 "$ssh_home"  
+  mkdir "$ssh_home" && chown "$1":"$1" "$ssh_home" && chmod 700 "$ssh_home"
 
-  if [[ $? -ne 0 ]]; then 
+  if [[ $? -ne 0 ]]; then
     print_error "Error while creating ssh directory"
   fi
 
   #get the keys in .tar archive
 
-  echo "debug $2"
-  
   curl -o keys.tar "$2"
 
-  if [[ $? -ne 0 ]]; then   
+  if [[ $? -ne 0 ]]; then
     print_download_abort "ssh keys"
     return 3
-  fi   
+  fi
 
   tar -xf keys.tar -C "$ssh_home"
 
-   if [[ $? -ne 0 ]]; then   
+   if [[ $? -ne 0 ]]; then
     print_install_abort "ssh keys"
     return 4
   fi
-  
+
   print_install_done "ssh keys"
 
 }
@@ -384,4 +382,3 @@ java_conf
 idea
 
 copy_ssh_keys slemoine "http://$LOCAL_REPO_HOST:$LOCAL_REPO_PORT/special/keys.tar"
-
