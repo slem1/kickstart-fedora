@@ -90,6 +90,37 @@ function must_be_root {
   fi
 }
 
+#Create a gnome icon
+#gnome_icon name exec icon type categories terminal destination
+function gnome_icon {    
+
+  if [[ $# -eq 0 || $@ == "-h" || $@ == "--help" ]]; then
+    echo "Usage: $0 name exec icon type categories terminal destination"
+    echo "[name] = see gnome desktop entry doc"
+    echo "[exec] = see gnome desktop entry doc"
+    echo "[icon] = see gnome desktop entry doc"
+    echo "[type] = see gnome desktop entry doc"
+    echo "[categories] = see gnome desktop entry doc"
+    echo "[terminal] = see gnome desktop entry doc"
+    echo "[destination] = destination path like /user/share/applications/myicon.desktop"
+    return 1
+  fi
+  
+  echo "Create gnome icon for $1 into $7"
+
+  cat <<-END > "$7"
+	[Desktop Entry]
+	Name=$1
+	Exec=$2
+	Icon=$3
+	Type=$4
+	Categories=$5
+	Terminal=$6
+END
+
+  echo  "Icon creation done !"
+}
+
 #Install functions
 
 #Install nvm and nodejs globally
@@ -285,6 +316,8 @@ function idea {
 
   ln -s "$INSTALL_DIR"/idea_install/"$IDEA_INSTALL_DIR" "$INSTALL_DIR"/idea
 
+  gnome_icon "Intellij IDEA" "$INSTALL_DIR/idea/bin/idea.sh" "$INSTALL_DIR/idea/bin/idea.png" "Application" "GNOME;GTK;Development" "false" "/usr/share/applications/intellij.desktop"
+
   print_install_done "Idea"
 
 }
@@ -382,3 +415,4 @@ java_conf
 idea
 
 copy_ssh_keys slemoine "http://$LOCAL_REPO_HOST:$LOCAL_REPO_PORT/special/keys.tar"
+
