@@ -212,6 +212,8 @@ function plex {
     return 2
   fi
 
+  gnome_icon "Plex web console" "/usr/bin/firefox localhost:32400/web" "/usr/lib/plexmediaserver/Resources/Graphics/dlna-icon-260.jpg" "Application" "Multimedia" "false" "/usr/share/applications/plex.desktop"
+
   print_install_done "Plex"
 
 }
@@ -415,4 +417,5 @@ java_conf
 idea
 
 copy_ssh_keys slemoine "http://$LOCAL_REPO_HOST:$LOCAL_REPO_PORT/special/keys.tar"
+
 
