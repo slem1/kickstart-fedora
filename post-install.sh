@@ -20,6 +20,7 @@ PLEX_VERSION=1.0.2
 ATOM_VERSION=1.8.0
 ATOM_PLUGINS_VERSION=1.0.0
 NVM_VERSION=0.31.3
+GITKRAKEN_VERSION=1.5.2
 
 #Private repo
 LOCAL_REPO_HOST=192.168.1.60
@@ -37,6 +38,9 @@ URL_PLEX=$APP_REPO_URL/plex/$PLEX_VERSION/plex.rpm
 URL_ATOM=$APP_REPO_URL/atom/$ATOM_VERSION/atom.rpm
 URL_ATOM_PLUGINS=$APP_REPO_URL/atom-plugins/$ATOM_PLUGINS_VERSION/atom-plugins.tgz
 URL_IDEA=$APP_REPO_URL/idea/$IDEA_VERSION/idea.tar.gz
+URL_GITKRAKEN=$APP_REPO_URL/gitkraken/$GITKRAKEN_VERSION/gitkraken.tar.gz
+
+#Origina
 
 #Original External resources / url may be outdated
 #URL_NVM=https://raw.githubusercontent.com/creationix/nvm/v0.31.3/install.sh
@@ -318,9 +322,39 @@ function idea {
 
   ln -s "$INSTALL_DIR"/idea_install/"$IDEA_INSTALL_DIR" "$INSTALL_DIR"/idea
 
-  gnome_icon "Intellij IDEA" "$INSTALL_DIR/idea/bin/idea.sh" "$INSTALL_DIR/idea/bin/idea.png" "Application" "GNOME;GTK;Development" "false" "/usr/share/applications/intellij.desktop"
+  gnome_icon "Intellij IDEA" "$INSTALL_DIR/idea/bin/idea.sh" "$INSTALL_DIR/idea/bin/idea.png" "Application" "Development;IDE" "false" "/usr/share/applications/intellij.desktop"
 
   print_install_done "Idea"
+
+}
+
+function gitkraken {
+
+  echo "Git Kraken install"
+
+  #libXss.so.1 dependency
+  dnf install libXScrnSaver
+
+  rm -rf "$INSTALL_DIR"/GitKraken
+
+  curl -o "$WORKING_DIR"/gitkraken.tar.gz "$URL_GITKRAKEN"
+
+  if [[ $? -ne 0 ]]; then
+    print_download_abort "Git Kraken"
+    return 1
+  fi
+
+  #uncompress
+  tar -xzf "$WORKING_DIR"/gitkraken.tar.gz -C "$INSTALL_DIR"
+  
+  if [[ $? -ne 0 ]]; then
+    print_install_abort "Git Kraken"
+    return 2
+  fi
+
+  gnome_icon "Git Kraken" "$INSTALL_DIR/GitKraken/gitkraken" "$INSTALL_DIR/GitKraken/icon.png" "Application" "Development;Utility" "false" "/usr/share/applications/gitkraken.desktop"
+
+  print_install_done "Git Kraken" 
 
 }
 
@@ -412,10 +446,13 @@ atom
 
 atom_plugins slemoine
 
+gitkraken
+
 java_conf
 
 idea
 
 copy_ssh_keys slemoine "http://$LOCAL_REPO_HOST:$LOCAL_REPO_PORT/special/keys.tar"
+
 
 
