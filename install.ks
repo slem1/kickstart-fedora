@@ -80,6 +80,7 @@ services --enabled=sshd
 @^workstation-product-environment
 nautilus-open-terminal
 gnome-tweak-tool
+powerline
 
 #dev
 java-1.8.0-openjdk-devel 
