@@ -167,31 +167,6 @@ function nodejs_global {
   print_install_done "Node JS"
 }
 
-#Install node to one user
-function nodejs {
-
-  var user=slemoine
-
-  echo "Install the node version manager"
-
-  su "$user"
-
-  curl -o- $URL_NVM | bash
-
-  source ~/.bashrc
-
-  nvm install node
-
-  logout
-
-  if [[ $? -eq 0 ]]; then
-    print_install_done "Node JS"
-  else
-    print_error "NodeJs install KO"
-    return 1
-  fi
-}
-
 #install the rpm fusion repo
 function rpmfusion {
 
