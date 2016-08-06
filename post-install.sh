@@ -147,17 +147,15 @@ function nodejs_global {
 
   git clone "$URL_NVM_GIT" "$nvm_dir" && cd "$nvm_dir" && git checkout `git describe --abbrev=0 --tags`
 
-  chgrp -R dev "$nvm_dir" #anyone can use node but only dev members can install new node version
+  #anyone can use node but only dev members can install new node version
 
-  chmod 774 "$nvm_dir"
+  chgrp -R dev "$nvm_dir" && chmod 774 "$nvm_dir"
 
   #unfortunaly add these lines in profile.d does not work...
   echo "export NVM_DIR=\"$nvm_dir\"" >> /etc/bashrc
   echo "[ -s "\$NVM_DIR/nvm.sh" ] && . "\$NVM_DIR/nvm.sh" # This loads nvm" >> /etc/bashrc
 
-  source /etc/bashrc
-
-  nvm install node
+  . /etc/bashrc && nvm install node
 
   if [[ $? -ne 0 ]]; then
     print_error "NodeJs install KO"
