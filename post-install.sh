@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #Kickstart post install script
-#@author slemonk
+#@author slemoine
 
 #Colors
 COLOR_NONE="$(tput sgr0)"
@@ -30,7 +30,7 @@ APP_REPO_URL=http://$LOCAL_REPO_HOST:$LOCAL_REPO_PORT/apps
 #External ressources
 URL_NVM_GIT=https://github.com/creationix/nvm.git
 
-#Local ressources
+#Apps private repo ressources
 URL_NVM=$APP_REPO_URL/nvm/$NVM_VERSION/install.sh
 URL_RPMFUSION_FREE=$APP_REPO_URL/rpmfusion/$FEDORA_VERSION/rpmfusion-free-release-$FEDORA_VERSION.noarch.rpm
 URL_RPMFUSION_NONFREE=$APP_REPO_URL/rpmfusion/$FEDORA_VERSION/rpmfusion-nonfree-release-$FEDORA_VERSION.noarch.rpm
@@ -39,17 +39,7 @@ URL_ATOM=$APP_REPO_URL/atom/$ATOM_VERSION/atom.rpm
 URL_ATOM_PLUGINS=$APP_REPO_URL/atom-plugins/$ATOM_PLUGINS_VERSION/atom-plugins.tgz
 URL_IDEA=$APP_REPO_URL/idea/$IDEA_VERSION/idea.tar.gz
 URL_GITKRAKEN=$APP_REPO_URL/gitkraken/$GITKRAKEN_VERSION/gitkraken.tar.gz
-
-#Origina
-
-#Original External resources / url may be outdated
-#URL_NVM=https://raw.githubusercontent.com/creationix/nvm/v0.31.3/install.sh
-#URL_NVM_GIT=https://github.com/creationix/nvm.git
-#URL_RPMFUSION_FREE=http://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm
-#URL_RPMFUSION_NONFREE=http://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
-#URL_PLEX=https://downloads.plex.tv/plex-media-server/1.0.2.2413-7caf41d/plexmediaserver-1.0.2.2413-7caf41d.x86_64.rpm
-#URL_ATOM=https://atom.io/download/rpm
-#URL_IDEA=https://download.jetbrains.com/idea/ideaIU-162.1447.21-no-jdk.tar.gz
+URL_POWERLINE_CONF=$APP_REPO_URL/powerline/conf/powerline-conf.tar.gz
 
 #Misc
 JAVA_HOME=/usr/lib/jvm/java-openjdk/bin
@@ -58,7 +48,7 @@ IDEA_INSTALL_DIR=idea-IU-$IDEA_VERSION
 
 #Common functions
 function print_error {
-  echo "$COLOR_RED$1$COLOR_NONE"
+  echo "$COLOR_RED$1$COLOR_NONE" 1>&2
 }
 
 function print_warn {
@@ -88,10 +78,29 @@ function print_install_done {
   print_success "$1 install done!"
 }
 
+#Exit the script if user is not Root
 function must_be_root {
   if [[ $EUID -ne 0 ]]; then
-    print_error_and_exit  "This script must be run as root" 1>&2
+    print_error_and_exit  "This script must be run as root"
   fi
+}
+
+#Prints the home path of user $1 on stdout
+function home {
+
+  if [[ $# -ne 1 ]]; then
+    echo "Usage: $0 <user>"
+    echo "[user] = user name" 	
+    return 1
+  fi
+
+  if id "$1" >> /dev/null; then
+    echo $(grep "$1" /etc/passwd | cut -d: -f6)        
+  else
+    print_error "user $1 does not exist !"
+    return 1
+  fi
+
 }
 
 #Create a gnome icon
@@ -99,7 +108,7 @@ function must_be_root {
 function gnome_icon {    
 
   if [[ $# -eq 0 || $@ == "-h" || $@ == "--help" ]]; then
-    echo "Usage: $0 name exec icon type categories terminal destination"
+    echo "Usage: $0 <name> <exec> <icon> <type> <categories> <terminal> <destination>"
     echo "[name] = see gnome desktop entry doc"
     echo "[exec] = see gnome desktop entry doc"
     echo "[icon] = see gnome desktop entry doc"
@@ -125,7 +134,9 @@ END
   echo  "Icon creation done !"
 }
 
-#Install functions
+#******************************************
+#***********Apps Install functions*********
+#******************************************
 
 #Install nvm and nodejs globally
 function nodejs_global {
@@ -426,6 +437,60 @@ function copy_ssh_keys {
 
 }
 
+
+#install powerline conf for user
+function powerline_conf {
+
+  title="Powerline configuration"
+
+  echo "$title install"
+
+  if [[ $# -ne 1 ]]; then 
+    echo "Usage: powerline_conf <user>"	
+    echo "[user]= User for which we want install the powerline configuration"
+  fi
+
+  home_path=$(home "$1")
+
+  if [[ ! -z $home_path ]]; then
+    
+    cd "$WORKING_DIR" && curl -o powerline-conf.tar.gz "$URL_POWERLINE_CONF"
+
+    if [[ $? -ne 0 ]]; then
+      print_download_abort "$title"
+      return 2
+    fi 
+
+    if [[ -d "$home_path"/.config/powerline ]]; then
+      rm -rf "$home_path"/.config/powerline
+    fi
+
+    mkdir "$home_path"/.config && tar -xf powerline-conf.tar.gz -C "$home_path"/.config
+
+    if [[ $? -ne 0 ]]; then
+      print_install_abort "$title"
+      return 3
+    fi
+
+    #Enable powerline
+    cat <<-END >> $home_path/.bashrc
+	if [ -f `which powerline-daemon` ]; then
+	   powerline-daemon -q
+	   POWERLINE_BASH_CONTINUATION=1
+	   POWERLINE_BASH_SELECT=1
+	   . /usr/share/powerline/bash/powerline.sh
+	fi
+END
+
+    print_install_done "$title"
+            
+  else
+    print_error "An error occured while retrieving home for $1"	
+    return 1
+  fi
+
+}
+
 #SCRIPT BODY
 
 must_be_root
@@ -454,5 +519,5 @@ idea
 
 copy_ssh_keys slemoine "http://$LOCAL_REPO_HOST:$LOCAL_REPO_PORT/special/keys.tar"
 
-
+powerline_conf slemoine
 
