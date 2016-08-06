@@ -188,7 +188,7 @@ function plex {
 
   echo "Install the plex media server"
 
-  cd "$WORKING_DIR" &&  wget -O plex.rpm $URL_PLEX
+  cd "$WORKING_DIR" && curl -o plex.rpm $URL_PLEX
 
   if [[ $? -ne 0 ]]; then
     print_download_abort "the plex rpm"
@@ -215,7 +215,7 @@ function atom {
 
   echo "Install atom"
 
-  cd "$WORKING_DIR" && wget -O atom.rpm $URL_ATOM
+  cd "$WORKING_DIR" && curl -o atom.rpm $URL_ATOM
 
   if [[ $? -ne 0 ]]; then
     print_download_abort "the atom rpm"
@@ -243,7 +243,7 @@ function atom_plugins {
     return 1
   fi
 
-  cd "$WORKING_DIR" &&  wget -O atom-plugins.tgz "$URL_ATOM_PLUGINS"
+  cd "$WORKING_DIR" &&  curl -o atom-plugins.tgz "$URL_ATOM_PLUGINS"
 
   if [[ $? -ne 0 ]]; then
     print_download_abort "the atom plugins archive"
@@ -296,7 +296,7 @@ function idea {
 
   mkdir "$INSTALL_DIR"/idea_install/
 
-  cd "$WORKING_DIR" &&  wget -O idea.tgz "$URL_IDEA"
+  cd "$WORKING_DIR" &&  curl -o idea.tgz "$URL_IDEA"
 
   if [[ $? -ne 0 ]]; then
     print_download_abort "Idea"
