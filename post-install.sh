@@ -317,7 +317,7 @@ function gitkraken {
   echo "Git Kraken install"
 
   #libXss.so.1 dependency
-  dnf install libXScrnSaver
+  dnf install libXScrnSaver -y -q
 
   rm -rf "$INSTALL_DIR"/GitKraken
 
@@ -384,7 +384,7 @@ function copy_ssh_keys {
 
   ssh_home="$user_home"/.ssh
 
-  mkdir "$ssh_home" && chown "$1":"$1" "$ssh_home" && chmod 700 "$ssh_home"
+  mkdir -p "$ssh_home" && chown "$1":"$1" "$ssh_home" && chmod 700 "$ssh_home"
 
   if [[ $? -ne 0 ]]; then
     print_error "Error while creating ssh directory"
@@ -426,6 +426,8 @@ function powerline_conf {
   home_path=$(home "$1")
 
   if [[ ! -z $home_path ]]; then
+
+    powerline_home="$home_path"/.config/powerline
     
     cd "$WORKING_DIR" && curl -o powerline-conf.tar.gz "$URL_POWERLINE_CONF"
 
@@ -434,11 +436,11 @@ function powerline_conf {
       return 2
     fi 
 
-    if [[ -d "$home_path"/.config/powerline ]]; then
-      rm -rf "$home_path"/.config/powerline
+    if [[ -d "$powerline_home" ]]; then
+      rm -rf "$powerline_home"
     fi
 
-    mkdir "$home_path"/.config && tar -xf powerline-conf.tar.gz -C "$home_path"/.config
+    mkdir -p "$home_path"/.config && tar -xf powerline-conf.tar.gz -C "$home_path"/.config
 
     if [[ $? -ne 0 ]]; then
       print_install_abort "$title"

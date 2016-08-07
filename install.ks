@@ -107,5 +107,6 @@ calibre
 dropbox
 lsb-core-noarch #for atom
 htop
+virt-manager
 
 %end
