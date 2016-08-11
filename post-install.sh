@@ -466,12 +466,27 @@ END
 
 }
 
+function cleanup {
+  
+  rm -rf "$WORKING_DIR"
+
+  exec 1<&-
+
+  exec 2<&-  
+
+}
+
 #SCRIPT BODY
 
 must_be_root
 
 if [[ ! -d "$WORKING_DIR" ]]; then
-  mkdir $WORKING_DIR
+  mkdir -p $WORKING_DIR
+fi
+
+
+if [[ ! -d "$INSTALL_DIR" ]]; then
+  mkdir -p $INSTALL_DIR
 fi
 
 dnf update -y
@@ -495,4 +510,6 @@ idea
 copy_ssh_keys slemoine "http://$LOCAL_REPO_HOST:$LOCAL_REPO_PORT/special/keys.tar"
 
 powerline_conf slemoine
+
+cleanup
 
