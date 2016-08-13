@@ -438,9 +438,13 @@ function powerline_conf {
 
     if [[ -d "$powerline_home" ]]; then
       rm -rf "$powerline_home"
-    fi
+    fi     
 
-    mkdir -p "$home_path"/.config && tar -xf powerline-conf.tar.gz -C "$home_path"/.config
+    if [[ ! -d "$home_path"/.config ]]; then
+     mkdir "$home_path"/.config && chown "$1":"$1" "$home_path"/.config && chmod -R 700 "$home_path"/.config   
+    fi     
+
+    tar -xf powerline-conf.tar.gz -C "$home_path"/.config && chown -R "$1":"$1" "$powerline_home" && chmod -R 700 "$powerline_home"
 
     if [[ $? -ne 0 ]]; then
       print_install_abort "$title"
