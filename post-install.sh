@@ -384,7 +384,7 @@ function copy_ssh_keys {
 
   ssh_home="$user_home"/.ssh
 
-  mkdir -p "$ssh_home" && chown "$1":"$1" "$ssh_home" && chmod 700 "$ssh_home"
+  mkdir -p "$ssh_home"
 
   if [[ $? -ne 0 ]]; then
     print_error "Error while creating ssh directory"
@@ -405,6 +405,10 @@ function copy_ssh_keys {
     print_install_abort "ssh keys"
     return 4
   fi
+
+  chown -R "$1":"$1" "$ssh_home" && chmod -R 600 "$ssh_home"
+
+  chmod 700 "$ssh_home"
 
   print_install_done "ssh keys"
 
