@@ -7,7 +7,6 @@ graphical
 
 # Use http server Installation media
 install
-#url --url=http://fedora.mirrors.ovh.net/linux/releases/23/Workstation/x86_64/os/
 url --url=http://fedora.mirrors.ovh.net/linux/releases/24/Workstation/x86_64/os/
 
 # Run the Setup Agent on first boot
@@ -55,16 +54,6 @@ repo --name=rpmfusion-nonfree-updates --mirrorlist=http://mirrors.rpmfusion.org/
 clearpart --all --initlabel
 
 autopart --type=plain
-
-# Disk partitioning information
-#part pv.3517 --fstype="lvmpv" --ondisk=sdb --size=15763
-#part pv.3914 --fstype="lvmpv" --ondisk=sda --size=19460
-#part /boot --fstype="ext4" --ondisk=sdb --size=238
-#volgroup fedoraData --pesize=4096 pv.3914
-#volgroup fedoraOs --pesize=4096 pv.3517
-#logvol /  --fstype="ext4" --size=13312 --name=root --vgname=fedoraOs
-#logvol /home  --fstype="ext4" --size=19456 --name=home --vgname=fedoraData
-#logvol swap  --fstype="swap" --size=2448 --name=swap --vgname=fedoraOs
 
 #after installation complete
 reboot --kexec
