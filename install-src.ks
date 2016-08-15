@@ -26,7 +26,7 @@ network  --hostname=localhost.localdomain
 firewall --enabled
 
 # Root password
-#rootpw 
+rootpw --iscrypted @@root.password@@
 
 # System timezone
 timezone Europe/Paris
@@ -34,13 +34,15 @@ timezone Europe/Paris
 #groups & users
 group --name=home
 group --name=dev
-user 
+user --name=@@user1.name@@ --password=@@user1.password@@ --iscrypted --gecos="@@user1.name@@" --groups=@@user1.groups@@
+user --name=@@user2.name@@ --password=@@user2.password@@ --iscrypted --gecos="@@user2.name@@" --groups=@@user2.groups@@
+
 
 # X Window System configuration information
 xconfig  --startxonboot
 
 # System bootloader configuration
-bootloader --location=mbr --boot-drive=vda
+bootloader --location=mbr 
 
 # repo
 repo --name=everything --baseurl=http://fedora.mirrors.ovh.net/linux/releases/24/Everything/x86_64/os/
