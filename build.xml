@@ -1,0 +1,27 @@
+<project name="kickstart-fedora" default="inject-properties">
+<description>
+  Build the kickstart fedora file
+</description>
+
+<property name="dist" location="dist" />
+<target name="merge-files" description="blabla">
+
+  <echo message="merge files in ${dist} directory"/>
+  <tstamp/>
+
+  <mkdir dir="${dist}" />  
+
+  <concat destfile="${dist}/install.ks" fixlastline="yes">
+   <filelist dir="." files="install-src.ks"/>
+   <string>%post</string>   
+   <filelist dir="." files="post-install.sh"/> 
+   <string>%end</string>   
+  </concat>
+</target>
+
+<target name="inject-properties" description="Inject key-value properties" depends="merge-files">
+  <echo message="Replace properties"/>
+  <replace file="${dist}/install.ks" replacefilterfile="keys.properties"/>    
+</target>
+
+</project>
