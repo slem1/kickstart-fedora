@@ -7,7 +7,6 @@ graphical
 
 # Use http server Installation media
 install
-#url --url=http://fedora.mirrors.ovh.net/linux/releases/23/Workstation/x86_64/os/
 url --url=http://fedora.mirrors.ovh.net/linux/releases/24/Workstation/x86_64/os/
 
 # Run the Setup Agent on first boot
@@ -27,7 +26,7 @@ network  --hostname=localhost.localdomain
 firewall --enabled
 
 # Root password
-#rootpw 
+rootpw --iscrypted @@root.password@@
 
 # System timezone
 timezone Europe/Paris
@@ -35,13 +34,15 @@ timezone Europe/Paris
 #groups & users
 group --name=home
 group --name=dev
-user 
+user --name=@@user1.name@@ --password=@@user1.password@@ --iscrypted --gecos="@@user1.name@@" --groups=@@user1.groups@@
+user --name=@@user2.name@@ --password=@@user2.password@@ --iscrypted --gecos="@@user2.name@@" --groups=@@user2.groups@@
+
 
 # X Window System configuration information
 xconfig  --startxonboot
 
 # System bootloader configuration
-bootloader --location=mbr --boot-drive=vda
+bootloader --location=mbr 
 
 # repo
 repo --name=everything --baseurl=http://fedora.mirrors.ovh.net/linux/releases/24/Everything/x86_64/os/
@@ -56,16 +57,6 @@ clearpart --all --initlabel
 
 autopart --type=plain
 
-# Disk partitioning information
-#part pv.3517 --fstype="lvmpv" --ondisk=sdb --size=15763
-#part pv.3914 --fstype="lvmpv" --ondisk=sda --size=19460
-#part /boot --fstype="ext4" --ondisk=sdb --size=238
-#volgroup fedoraData --pesize=4096 pv.3914
-#volgroup fedoraOs --pesize=4096 pv.3517
-#logvol /  --fstype="ext4" --size=13312 --name=root --vgname=fedoraOs
-#logvol /home  --fstype="ext4" --size=19456 --name=home --vgname=fedoraData
-#logvol swap  --fstype="swap" --size=2448 --name=swap --vgname=fedoraOs
-
 #after installation complete
 reboot --kexec
 
@@ -77,16 +68,16 @@ services --enabled=sshd
 %packages
 
 #fedora workstation
-@base-x
-@workstation-product
+@^workstation-product-environment
 nautilus-open-terminal
 gnome-tweak-tool
-firefox
+powerline
 
 #dev
 java-1.8.0-openjdk-devel 
 postgresql-server
 postgresql-contrib
+pgadmin3
 git
 
 #multimedia
@@ -106,5 +97,7 @@ tomboy
 calibre
 dropbox
 lsb-core-noarch #for atom
+htop
+virt-manager
 
 %end

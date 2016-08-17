@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #Kickstart post install script
-#@author slemonk
+#@author slemoine
 
 #Colors
 COLOR_NONE="$(tput sgr0)"
@@ -9,26 +9,49 @@ COLOR_RED="$(tput setaf 1)"
 COLOR_GREEN="$(tput setaf 2)"
 COLOR_ORANGE="$(tput setaf 172)"
 
-#Resources
-URL_NVM=https://raw.githubusercontent.com/creationix/nvm/v0.31.3/install.sh
-URL_NVM_GIT=https://github.com/creationix/nvm.git
-URL_RPMFUSION_FREE=http://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm
-URL_RPMFUSION_NONFREE=http://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm 
-URL_PLEX=https://downloads.plex.tv/plex-media-server/1.0.2.2413-7caf41d/plexmediaserver-1.0.2.2413-7caf41d.x86_64.rpm
-URL_ATOM=https://atom.io/download/rpm
-URL_ATOM_PLUGINS=http://192.168.1.60/atom-plugins.tgz
-#URL_IDEA=https://download.jetbrains.com/idea/ideaIU-162.1447.21-no-jdk.tar.gz
-URL_IDEA=http://192.168.1.60/repo/idea.tgz
+#dir
+WORKING_DIR=/var/kickstart-tmp
+INSTALL_DIR=/opt
 
-IDEA_VERSION=idea-IU-162.1447.21
+#Versions
+FEDORA_VERSION=@@fedora.version@@
+IDEA_VERSION=@@idea.verion@@
+PLEX_VERSION=@@plex.version@@
+ATOM_VERSION=@@atom.version@@
+ATOM_PLUGINS_VERSION=@@atom.plugins.version@@
+NVM_VERSION=@@nvm.version@@
+GITKRAKEN_VERSION=@@gitkraken.version@@
+
+#Private repo
+LOCAL_REPO_HOST=@@local.repo.host@@
+LOCAL_REPO_PORT=@@local.repo.port@@
+APP_REPO_URL=http://$LOCAL_REPO_HOST:$LOCAL_REPO_PORT/apps
+
+#External ressources
+URL_NVM_GIT=https://github.com/creationix/nvm.git
+
+#Apps private repo ressources
+URL_NVM=$APP_REPO_URL/nvm/$NVM_VERSION/install.sh
+URL_RPMFUSION_FREE=$APP_REPO_URL/rpmfusion/$FEDORA_VERSION/rpmfusion-free-release-$FEDORA_VERSION.noarch.rpm
+URL_RPMFUSION_NONFREE=$APP_REPO_URL/rpmfusion/$FEDORA_VERSION/rpmfusion-nonfree-release-$FEDORA_VERSION.noarch.rpm
+URL_PLEX=$APP_REPO_URL/plex/$PLEX_VERSION/plex.rpm
+URL_ATOM=$APP_REPO_URL/atom/$ATOM_VERSION/atom.rpm
+URL_ATOM_PLUGINS=$APP_REPO_URL/atom-plugins/$ATOM_PLUGINS_VERSION/atom-plugins.tgz
+URL_IDEA=$APP_REPO_URL/idea/$IDEA_VERSION/idea.tar.gz
+URL_GITKRAKEN=$APP_REPO_URL/gitkraken/$GITKRAKEN_VERSION/gitkraken.tar.gz
+URL_POWERLINE_CONF=$APP_REPO_URL/powerline/conf/powerline-conf.tar.gz
+
+#Misc
+JAVA_HOME=/usr/lib/jvm/java-openjdk/bin
+IDEA_INSTALL_DIR=idea-IU-$IDEA_VERSION
 
 
 #Common functions
 function print_error {
-  echo "$COLOR_RED$1$COLOR_NONE"
+  echo "$COLOR_RED$1$COLOR_NONE" 1>&2
 }
 
-function print_warn {  
+function print_warn {
   echo "$COLOR_ORANGE$1$COLOR_NONE"
 }
 
@@ -51,66 +74,95 @@ function print_download_abort {
   print_error "An error occured while downloading $1, abort..."
 }
 
+function print_install_done {
+  print_success "$1 install done!"
+}
+
+#Exit the script if user is not Root
 function must_be_root {
   if [[ $EUID -ne 0 ]]; then
-    print_error_and_exit  "This script must be run as root" 1>&2   
+    print_error_and_exit  "This script must be run as root"
   fi
 }
 
-#Install functions
+#Prints the home path of user $1 on stdout
+function home {
+
+  if [[ $# -ne 1 ]]; then
+    echo "Usage: $0 <user>"
+    echo "[user] = user name" 	
+    return 1
+  fi
+
+  if id "$1" >> /dev/null; then
+    echo $(grep "$1" /etc/passwd | cut -d: -f6)        
+  else
+    print_error "user $1 does not exist !"
+    return 1
+  fi
+
+}
+
+#Create a gnome icon
+#gnome_icon name exec icon type categories terminal destination
+function gnome_icon {    
+
+  if [[ $# -eq 0 || $@ == "-h" || $@ == "--help" ]]; then
+    echo "Usage: $0 <name> <exec> <icon> <type> <categories> <terminal> <destination>"
+    echo "[name] = see gnome desktop entry doc"
+    echo "[exec] = see gnome desktop entry doc"
+    echo "[icon] = see gnome desktop entry doc"
+    echo "[type] = see gnome desktop entry doc"
+    echo "[categories] = see gnome desktop entry doc"
+    echo "[terminal] = see gnome desktop entry doc"
+    echo "[destination] = destination path like /user/share/applications/myicon.desktop"
+    return 1
+  fi
+  
+  echo "Create gnome icon for $1 into $7"
+
+  cat <<-END > "$7"
+	[Desktop Entry]
+	Name=$1
+	Exec=$2
+	Icon=$3
+	Type=$4
+	Categories=$5
+	Terminal=$6
+END
+
+  echo  "Icon creation done !"
+}
+
+#******************************************
+#***********Apps Install functions*********
+#******************************************
 
 #Install nvm and nodejs globally
 function nodejs_global {
 
-  nvm_dir=/opt/nvm
+  echo "Install the node version manager for all users"
 
-  echo "Install the node version manager for all users "
-  
-  git clone "$URL_NVM_GIT" "$nvm_dir" && cd "$nvm_dir" && git checkout `git describe --abbrev=0 --tags` 
+  nvm_dir="$INSTALL_DIR"/nvm
 
-  chgrp -R dev "$nvm_dir" #anyone can use node but only dev members can install new node version
+  git clone "$URL_NVM_GIT" "$nvm_dir" && cd "$nvm_dir" && git checkout `git describe --abbrev=0 --tags`
 
-  chmod 774 "$nvm_dir"  
+  #anyone can use node but only dev members can install new node version
+
+  chgrp -R dev "$nvm_dir" && chmod 774 "$nvm_dir"
 
   #unfortunaly add these lines in profile.d does not work...
   echo "export NVM_DIR=\"$nvm_dir\"" >> /etc/bashrc
   echo "[ -s "\$NVM_DIR/nvm.sh" ] && . "\$NVM_DIR/nvm.sh" # This loads nvm" >> /etc/bashrc
 
-  source /etc/bashrc
+  . /etc/bashrc && nvm install node
 
-  nvm install node
-
-  if [[ $? = 0 ]]; then
-    print_success "NodeJs install OK !"
-  else
+  if [[ $? -ne 0 ]]; then
     print_error "NodeJs install KO"
     return 1
   fi
-}
 
-#Install node to one user
-function nodejs {
-
-  var user=slemoine
-
-  echo "Install the node version manager"
-
-  su "$user"
-
-  curl -o- $URL_NVM | bash
-
-  source ~/.bashrc
-
-  nvm install node
-
-  logout
-
-  if [[ $? = 0 ]]; then
-    print_success "NodeJs install OK !"
-  else
-    print_error "NodeJs install KO"
-    return 1
-  fi
+  print_install_done "Node JS"
 }
 
 #install the rpm fusion repo
@@ -123,9 +175,10 @@ function rpmfusion {
   if [[ $? -ne 0 ]]; then
     print_error "Error while installing rpm fusion"
     return 1
-  else
-    print_success "rpm fusion install OK !"
   fi
+
+  print_install_done "RPM Fusion"
+
 }
 
 #install plex media server
@@ -133,7 +186,7 @@ function plex {
 
   echo "Install the plex media server"
 
-  cd /tmp/ &&  wget -O plex.rpm $URL_PLEX
+  cd "$WORKING_DIR" && curl -o plex.rpm $URL_PLEX
 
   if [[ $? -ne 0 ]]; then
     print_download_abort "the plex rpm"
@@ -143,23 +196,25 @@ function plex {
   rpm -i ./plex.rpm
 
   if [[ $? -ne 0 ]]; then
-    print_install_abort "Plex"  
+    print_install_abort "Plex"
     return 2
-  else 
-    print_success "Plex install OK!"
-  fi 
+  fi
+
+  gnome_icon "Plex web console" "/usr/bin/firefox localhost:32400/web" "/usr/lib/plexmediaserver/Resources/Graphics/dlna-icon-260.jpg" "Application" "Multimedia" "false" "/usr/share/applications/plex.desktop"
+
+  print_install_done "Plex"
 
 }
 
-#install atom
+#Install atom editor
+#Note : Atom requires lsb-core-noarch package, please be sure that this
+#package has already been installed either manually or by kickstart packages install
 function atom {
+
   echo "Install atom"
 
-  #todo add it to the kickstart package
-  dnf install lsb-core-noarch -y
+  cd "$WORKING_DIR" && curl -o atom.rpm $URL_ATOM
 
-  cd /tmp/ && wget -O atom.rpm $URL_ATOM
-  	
   if [[ $? -ne 0 ]]; then
     print_download_abort "the atom rpm"
     return 1
@@ -168,101 +223,264 @@ function atom {
   rpm -i ./atom.rpm
 
   if [[ $? -ne 0 ]]; then
-    print_error "Error during atom installation... aborting..."  
+    print_error "Error during atom installation... aborting..."
     return 2
-  else 
-    print_success "Atom install OK!"
-  fi 
+  fi
+
+  print_install_done "Atom"
 
 }
 
-#Install the atom plugins
+#Install atom additional plugins
 function atom_plugins {
 
   echo "Install atom"
 
-  cd /tmp/ &&  wget -O atom-plugins.tgz "$URL_ATOM_PLUGINS"
+  if [[ $# -lt 1 ]]; then
+    print_error "At least one user must be specified"
+    return 1
+  fi
+
+  cd "$WORKING_DIR" &&  curl -o atom-plugins.tgz "$URL_ATOM_PLUGINS"
 
   if [[ $? -ne 0 ]]; then
     print_download_abort "the atom plugins archive"
-    return 1
+    return 2
   fi
 
   tar -xzf atom-plugins.tgz
 
   if [[ $? -ne 0 ]]; then
     print_error "Error while uncompressing archive, aborting..."
-    return 2
-  fi 
+    return 3
+  fi
 
   #copy the atom plugins for users
-  for user in "$@"; do     
-    
+  for user in "$@"; do
+
     id "$user"
-    
+
     if [[ $? -ne 0 ]]; then
-      print_warn "$user user does not exist, skip it" 
+      print_warn "$user user does not exist, skip it"
       continue
     fi
 
-    #get the user home 
+    #get the user home
     user_home="$(grep "$user" /etc/passwd | cut -d ":" -f6)"
 
     if [[ ! -s "$user_home" ]]; then
       echo "No home, no atom for $user"
-    else	
-      echo "install atom plugins in $i in $user_home."           
+    else
+      echo "install atom plugins in $i in $user_home."
 
       if [[ ! -d "$user_home"/.atom ]]; then
 	mkdir "$user_home"/.atom
-      fi	
-    
-      cp -R /tmp/atom-plugins/* "$user_home"/.atom 
+      fi
+
+      cp -R "$WORKING_DIR"/atom-plugins/* "$user_home"/.atom
 
       chown -R "$user":"$user" "$user_home"/.atom
     fi
  done
 
- print_success "Atom plugins install OK!"
+ print_install_done "Atom plugins"
 
 }
 
+#Install intellij idea
 function idea {
 
   echo "Install intellij idea"
 
-  mkdir /opt/idea_install/
+  mkdir "$INSTALL_DIR"/idea_install/
 
-  cd /tmp/ &&  wget -O idea.tgz "$URL_IDEA"  
+  cd "$WORKING_DIR" &&  curl -o idea.tgz "$URL_IDEA"
 
   if [[ $? -ne 0 ]]; then
-    print_download_abort "Idea" 
+    print_download_abort "Idea"
   fi
 
   echo "Please wait while uncompressing the idea archive..."
 
-  tar -xzf idea.tgz -C /opt/idea_install
+  tar -xzf idea.tgz -C "$INSTALL_DIR"/idea_install
 
-  ln -s /opt/idea_install/"$IDEA_VERSION" /opt/idea
+  ln -s "$INSTALL_DIR"/idea_install/"$IDEA_INSTALL_DIR" "$INSTALL_DIR"/idea
 
-  #clean up
-  rm /tmp/idea.tgz
+  gnome_icon "Intellij IDEA" "$INSTALL_DIR/idea/bin/idea.sh" "$INSTALL_DIR/idea/bin/idea.png" "Application" "Development;IDE" "false" "/usr/share/applications/intellij.desktop"
+
+  print_install_done "Idea"
 
 }
 
-#Only played if java sdk has been already installed
-function java_conf {
+function gitkraken {
 
-  if [[ -f "/etc/profile.d/java-jdk.sh" ]]; then
-    print_error "java-jdk.sh already exists"
+  echo "Git Kraken install"
+
+  #libXss.so.1 dependency
+  dnf install libXScrnSaver -y -q
+
+  rm -rf "$INSTALL_DIR"/GitKraken
+
+  curl -o "$WORKING_DIR"/gitkraken.tar.gz "$URL_GITKRAKEN"
+
+  if [[ $? -ne 0 ]]; then
+    print_download_abort "Git Kraken"
     return 1
   fi
-  
-  echo "export JAVA_HOME=/usr/lib/jvm/java-openjdk/bin" >> /etc/profile.d/java-jdk.sh	
 
-  print_success "JAVA post-install configuration OK !"
+  #uncompress
+  tar -xzf "$WORKING_DIR"/gitkraken.tar.gz -C "$INSTALL_DIR"
+  
+  if [[ $? -ne 0 ]]; then
+    print_install_abort "Git Kraken"
+    return 2
+  fi
+
+  gnome_icon "Git Kraken" "$INSTALL_DIR/GitKraken/gitkraken" "$INSTALL_DIR/GitKraken/icon.png" "Application" "Development;Utility" "false" "/usr/share/applications/gitkraken.desktop"
+
+  print_install_done "Git Kraken" 
+
+}
+
+#Java SDK must be installed
+function java_conf {
+
+  if [[ -f "/etc/profile.d/java-env.sh" ]]; then
+    print_error "java-env.sh already exists"
+    return 1
+  fi
+
+  echo "export JAVA_HOME=$JAVA_HOME" >> /etc/profile.d/java-env.sh
 
   source /etc/profile
+
+  print_install_done "Java post-install configuration"
+}
+
+#Please don't use this in a none secured private (local) environment
+function copy_ssh_keys {
+
+  if [[ $# -ne 2 ]]; then
+    echo "Usage : copy_ssh_key <username> <url_for_ssh_keys>"
+    exit 1
+  fi
+
+  cd "$WORKING_DIR"
+
+  id "$1"
+
+  if [[ $? -ne 0 ]]; then
+    print_error "User $1 does not exists !"
+    return 1
+  fi
+
+  #get the user home
+  user_home="$(grep "$1" /etc/passwd | cut -d ":" -f6)"
+
+  if [[ ! -s "$user_home" ]]; then
+    print_error "No home, no ssh for $1"
+    return 2
+  fi
+
+  ssh_home="$user_home"/.ssh
+
+  mkdir -p "$ssh_home"
+
+  if [[ $? -ne 0 ]]; then
+    print_error "Error while creating ssh directory"
+  fi
+
+  #get the keys in .tar archive
+
+  curl -o keys.tar "$2"
+
+  if [[ $? -ne 0 ]]; then
+    print_download_abort "ssh keys"
+    return 3
+  fi
+
+  tar -xf keys.tar -C "$ssh_home"
+
+   if [[ $? -ne 0 ]]; then
+    print_install_abort "ssh keys"
+    return 4
+  fi
+
+  chown -R "$1":"$1" "$ssh_home" && chmod -R 600 "$ssh_home"
+
+  chmod 700 "$ssh_home"
+
+  print_install_done "ssh keys"
+
+}
+
+
+#install powerline conf for user
+function powerline_conf {
+
+  title="Powerline configuration"
+
+  echo "$title install"
+
+  if [[ $# -ne 1 ]]; then 
+    echo "Usage: powerline_conf <user>"	
+    echo "[user]= User for which we want install the powerline configuration"
+  fi
+
+  home_path=$(home "$1")
+
+  if [[ ! -z $home_path ]]; then
+
+    powerline_home="$home_path"/.config/powerline
+    
+    cd "$WORKING_DIR" && curl -o powerline-conf.tar.gz "$URL_POWERLINE_CONF"
+
+    if [[ $? -ne 0 ]]; then
+      print_download_abort "$title"
+      return 2
+    fi 
+
+    if [[ -d "$powerline_home" ]]; then
+      rm -rf "$powerline_home"
+    fi     
+
+    if [[ ! -d "$home_path"/.config ]]; then
+     mkdir "$home_path"/.config && chown "$1":"$1" "$home_path"/.config && chmod -R 700 "$home_path"/.config   
+    fi     
+
+    tar -xf powerline-conf.tar.gz -C "$home_path"/.config && chown -R "$1":"$1" "$powerline_home" && chmod -R 700 "$powerline_home"
+
+    if [[ $? -ne 0 ]]; then
+      print_install_abort "$title"
+      return 3
+    fi
+
+    #Enable powerline
+    cat <<-END >> $home_path/.bashrc
+	if [ -f `which powerline-daemon` ]; then
+	   powerline-daemon -q
+	   POWERLINE_BASH_CONTINUATION=1
+	   POWERLINE_BASH_SELECT=1
+	   . /usr/share/powerline/bash/powerline.sh
+	fi
+END
+
+    print_install_done "$title"
+            
+  else
+    print_error "An error occured while retrieving home for $1"	
+    return 1
+  fi
+
+}
+
+function cleanup {
+  
+  rm -rf "$WORKING_DIR"
+
+  exec 1<&-
+
+  exec 2<&-  
 
 }
 
@@ -270,21 +488,36 @@ function java_conf {
 
 must_be_root
 
-#dnf update -y
-
-#rpmfusion
-
-#plex
-
-#nodejs_global
-
-#atom
-
-#atom_plugins slemoine
-
-#java_conf
-
-#idea
+if [[ ! -d "$WORKING_DIR" ]]; then
+  mkdir -p $WORKING_DIR
+fi
 
 
+if [[ ! -d "$INSTALL_DIR" ]]; then
+  mkdir -p $INSTALL_DIR
+fi
+
+dnf update -y
+
+rpmfusion
+
+plex
+
+nodejs_global
+
+atom
+
+atom_plugins @@user1.name@@
+
+gitkraken
+
+java_conf
+
+idea
+
+copy_ssh_keys @@user1.name@@ "http://$LOCAL_REPO_HOST:$LOCAL_REPO_PORT/special/keys.tar"
+
+powerline_conf @@user1.name@@
+
+cleanup
 
