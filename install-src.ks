@@ -52,16 +52,8 @@ repo --name=rpmfusion-free-updates --mirrorlist=http://mirrors.rpmfusion.org/mir
 repo --name=rpmfusion-nonfree --mirrorlist=http://mirrors.rpmfusion.org/mirrorlist?repo=nonfree-fedora-24&arch=x86_64 
 repo --name=rpmfusion-nonfree-updates --mirrorlist=http://mirrors.rpmfusion.org/mirrorlist?repo=nonfree-fedora-updates-released-24&arch=x86_64 
 
-# Partition clearing information
-clearpart --all --initlabel
-
-autopart --type=plain
-
 #after installation complete
 reboot --kexec
-
-#for vm only
-services --enabled=sshd
 
 #Package selection
 
@@ -90,7 +82,6 @@ vim
 #ssh
 openssh
 openssh-clients
-openssh-server
 
 #misc
 tomboy
