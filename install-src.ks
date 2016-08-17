@@ -79,6 +79,7 @@ postgresql-server
 postgresql-contrib
 pgadmin3
 git
+gitg
 
 #multimedia
 azureus
@@ -92,12 +93,15 @@ openssh
 openssh-clients
 openssh-server
 
+#system
+gparted
+htop
+virt-manager
+
 #misc
 tomboy
 calibre
 dropbox
 lsb-core-noarch #for atom
-htop
-virt-manager
 
 %end
