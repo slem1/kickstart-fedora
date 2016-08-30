@@ -7,7 +7,7 @@ graphical
 
 # Use http server Installation media
 install
-url --url=http://fedora.mirrors.ovh.net/linux/releases/24/Workstation/x86_64/os/
+url --url=http://fedora.mirrors.ovh.net/linux/releases/@fedora.version@/Workstation/@fedora.arch@/os/
 
 # Run the Setup Agent on first boot
 firstboot --enable
@@ -26,7 +26,7 @@ network  --hostname=localhost.localdomain
 firewall --enabled
 
 # Root password
-rootpw --iscrypted @@root.password@@
+rootpw --iscrypted @root.password@
 
 # System timezone
 timezone Europe/Paris
@@ -34,8 +34,8 @@ timezone Europe/Paris
 #groups & users
 group --name=home
 group --name=dev
-user --name=@@user1.name@@ --password=@@user1.password@@ --iscrypted --gecos="@@user1.name@@" --groups=@@user1.groups@@
-user --name=@@user2.name@@ --password=@@user2.password@@ --iscrypted --gecos="@@user2.name@@" --groups=@@user2.groups@@
+user --name=@user1.name@ --password=@user1.password@ --iscrypted --gecos="@user1.name@" --groups=@user1.groups@
+user --name=@user2.name@ --password=@user2.password@ --iscrypted --gecos="@user2.name@" --groups=@user2.groups@
 
 
 # X Window System configuration information

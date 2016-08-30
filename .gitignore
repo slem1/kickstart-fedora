@@ -1,3 +1,3 @@
 target/
 dist/
-*.properties
+*.properties.private

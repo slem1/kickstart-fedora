@@ -14,17 +14,17 @@ WORKING_DIR=/var/kickstart-tmp
 INSTALL_DIR=/opt
 
 #Versions
-FEDORA_VERSION=@@fedora.version@@
-IDEA_VERSION=@@idea.verion@@
-PLEX_VERSION=@@plex.version@@
-ATOM_VERSION=@@atom.version@@
-ATOM_PLUGINS_VERSION=@@atom.plugins.version@@
-NVM_VERSION=@@nvm.version@@
-GITKRAKEN_VERSION=@@gitkraken.version@@
+FEDORA_VERSION=@fedora.version@
+IDEA_VERSION=@idea.verion@
+PLEX_VERSION=@plex.version@
+ATOM_VERSION=@atom.version@
+ATOM_PLUGINS_VERSION=@atom.plugins.version@
+NVM_VERSION=@nvm.version@
+GITKRAKEN_VERSION=@gitkraken.version@
 
 #Private repo
-LOCAL_REPO_HOST=@@local.repo.host@@
-LOCAL_REPO_PORT=@@local.repo.port@@
+LOCAL_REPO_HOST=@local.repo.host@
+LOCAL_REPO_PORT=@local.repo.port@
 APP_REPO_URL=http://$LOCAL_REPO_HOST:$LOCAL_REPO_PORT/apps
 
 #External ressources
@@ -507,7 +507,7 @@ nodejs_global
 
 atom
 
-atom_plugins @@user1.name@@
+atom_plugins @user1.name@
 
 gitkraken
 
@@ -515,9 +515,9 @@ java_conf
 
 idea
 
-copy_ssh_keys @@user1.name@@ "http://$LOCAL_REPO_HOST:$LOCAL_REPO_PORT/special/keys.tar"
+copy_ssh_keys @user1.name@ "http://$LOCAL_REPO_HOST:$LOCAL_REPO_PORT/special/keys.tar"
 
-powerline_conf @@user1.name@@
+powerline_conf @user1.name@
 
 cleanup
 

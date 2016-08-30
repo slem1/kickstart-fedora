@@ -1,27 +1,47 @@
-<project name="kickstart-fedora" default="inject-properties">
+<project name="kickstart-fedora" default="build">
 <description>
-  Build the kickstart fedora file
+  Build the kickstart fedora project
 </description>
 
+<!--properties-->
 <property name="dist" location="dist" />
-<target name="merge-files" description="blabla">
 
+<!-- global -->
+<target name="prepare-build" description="global setup and clean">
+  <delete dir="${dist}"/>
+  <mkdir dir="${dist}" />
+  <filter filtersfile="global-conf.properties"/>
+  <filter filtersfile="user-conf.properties.private"/>
+</target>
+
+<!-- default -->
+<target name="build" description="Make the final kickstart file" depends="prepare-build">
   <echo message="merge files in ${dist} directory"/>
-  <tstamp/>
-
-  <mkdir dir="${dist}" />  
-
   <concat destfile="${dist}/install.ks" fixlastline="yes">
+   <filterchain>
+     <filterreader classname="org.apache.tools.ant.filters.ReplaceTokens">
+       <param type="propertiesfile" value="global-conf.properties"/>
+       <param type="propertiesfile" value="user-conf.properties.private"/>
+     </filterreader>
+   </filterchain>
    <filelist dir="." files="install-src.ks"/>
    <string>%post</string>   
    <filelist dir="." files="post-install.sh"/> 
    <string>%end</string>   
   </concat>
+
 </target>
 
-<target name="inject-properties" description="Inject key-value properties" depends="merge-files">
-  <echo message="Replace properties"/>
-  <replace file="${dist}/install.ks" replacefilterfile="keys.properties"/>    
+<!-- atomic builds -->
+<target name="build-post-install" description="Make the post-install script" depends="prepare-build">
+  <echo message="build post install script in ${dist}"/>
+  <copy file="post-install.sh" todir="${dist}" filtering="true"/>
+  <chmod file="${dist}/post-install.sh" perm="755" />
+</target>
+
+<target name="build-install-src" depends="prepare-build" description="Build the minimal kickstart file without extra-ops">
+  <echo message="build minimal kickstart file in ${dist}"/>
+  <copy file="install-src.ks" tofile="${dist}/install-minimal.ks" filtering="true"/>  
 </target>
 
 </project>
