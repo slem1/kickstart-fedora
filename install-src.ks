@@ -80,6 +80,7 @@ postgresql-contrib
 pgadmin3
 git
 gitg
+ant
 
 #multimedia
 azureus
