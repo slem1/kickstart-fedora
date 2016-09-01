@@ -15,7 +15,7 @@ INSTALL_DIR=/opt
 
 #Versions
 FEDORA_VERSION=@fedora.version@
-IDEA_VERSION=@idea.verion@
+IDEA_VERSION=@idea.version@
 PLEX_VERSION=@plex.version@
 ATOM_VERSION=@atom.version@
 ATOM_PLUGINS_VERSION=@atom.plugins.version@
@@ -23,23 +23,23 @@ NVM_VERSION=@nvm.version@
 GITKRAKEN_VERSION=@gitkraken.version@
 
 #Private repo
-LOCAL_REPO_HOST=@local.repo.host@
-LOCAL_REPO_PORT=@local.repo.port@
-APP_REPO_URL=http://$LOCAL_REPO_HOST:$LOCAL_REPO_PORT/apps
+INSTALL_REPO_HOST=@install.repo.host@
+INSTALL_REPO_PORT=@install.repo.port@
+APPS_REPO_URL=http://$INSTALL_REPO_HOST:$INSTALL_REPO_PORT/apps
 
 #External ressources
 URL_NVM_GIT=https://github.com/creationix/nvm.git
 
 #Apps private repo ressources
-URL_NVM=$APP_REPO_URL/nvm/$NVM_VERSION/install.sh
-URL_RPMFUSION_FREE=$APP_REPO_URL/rpmfusion/$FEDORA_VERSION/rpmfusion-free-release-$FEDORA_VERSION.noarch.rpm
-URL_RPMFUSION_NONFREE=$APP_REPO_URL/rpmfusion/$FEDORA_VERSION/rpmfusion-nonfree-release-$FEDORA_VERSION.noarch.rpm
-URL_PLEX=$APP_REPO_URL/plex/$PLEX_VERSION/plex.rpm
-URL_ATOM=$APP_REPO_URL/atom/$ATOM_VERSION/atom.rpm
-URL_ATOM_PLUGINS=$APP_REPO_URL/atom-plugins/$ATOM_PLUGINS_VERSION/atom-plugins.tgz
-URL_IDEA=$APP_REPO_URL/idea/$IDEA_VERSION/idea.tar.gz
-URL_GITKRAKEN=$APP_REPO_URL/gitkraken/$GITKRAKEN_VERSION/gitkraken.tar.gz
-URL_POWERLINE_CONF=$APP_REPO_URL/powerline/conf/powerline-conf.tar.gz
+URL_NVM=$APPS_REPO_URL/nvm/$NVM_VERSION/install.sh
+URL_RPMFUSION_FREE=$APPS_REPO_URL/rpmfusion/$FEDORA_VERSION/rpmfusion-free-release-$FEDORA_VERSION.noarch.rpm
+URL_RPMFUSION_NONFREE=$APPS_REPO_URL/rpmfusion/$FEDORA_VERSION/rpmfusion-nonfree-release-$FEDORA_VERSION.noarch.rpm
+URL_PLEX=$APPS_REPO_URL/plex/$PLEX_VERSION/plex.rpm
+URL_ATOM=$APPS_REPO_URL/atom/$ATOM_VERSION/atom.rpm
+URL_ATOM_PLUGINS=$APPS_REPO_URL/atom-plugins/$ATOM_PLUGINS_VERSION/atom-plugins.tgz
+URL_IDEA=$APPS_REPO_URL/idea/$IDEA_VERSION/idea.tar.gz
+URL_GITKRAKEN=$APPS_REPO_URL/gitkraken/$GITKRAKEN_VERSION/gitkraken.tar.gz
+URL_POWERLINE_CONF=$APPS_REPO_URL/powerline/conf/powerline-conf.tar.gz
 
 #Misc
 JAVA_HOME=/usr/lib/jvm/java-openjdk/bin
@@ -515,7 +515,7 @@ java_conf
 
 idea
 
-copy_ssh_keys @user1.name@ "http://$LOCAL_REPO_HOST:$LOCAL_REPO_PORT/special/keys.tar"
+copy_ssh_keys @user1.name@ "http://$INSTALL_REPO_HOST:$INSTALL_REPO_PORT/special/keys.tar"
 
 powerline_conf @user1.name@
 

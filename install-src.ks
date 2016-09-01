@@ -7,7 +7,8 @@ graphical
 
 # Use http server Installation media
 install
-url --url=http://fedora.mirrors.ovh.net/linux/releases/@fedora.version@/Workstation/@fedora.arch@/os/
+#url fallback --url=http://fedora.mirrors.ovh.net/linux/releases/@fedora.version@/Workstation/@fedora.arch@/os/
+url --url=http://@install.repo.host@:@install.repo.port@/linux/releases/@fedora.version@/Workstation/@fedora.arch@/os/
 
 # Run the Setup Agent on first boot
 firstboot --enable
@@ -45,12 +46,14 @@ xconfig  --startxonboot
 bootloader --location=mbr 
 
 # repo
-repo --name=everything --baseurl=http://fedora.mirrors.ovh.net/linux/releases/24/Everything/x86_64/os/
-repo --name=updates --baseurl=http://fedora.mirrors.ovh.net/linux/updates/24/x86_64/
-repo --name=rpmfusion-free --mirrorlist=http://mirrors.rpmfusion.org/mirrorlist?repo=free-fedora-24&arch=x86_64 
-repo --name=rpmfusion-free-updates --mirrorlist=http://mirrors.rpmfusion.org/mirrorlist?repo=free-fedora-updates-released-24&arch=x86_64 
-repo --name=rpmfusion-nonfree --mirrorlist=http://mirrors.rpmfusion.org/mirrorlist?repo=nonfree-fedora-24&arch=x86_64 
-repo --name=rpmfusion-nonfree-updates --mirrorlist=http://mirrors.rpmfusion.org/mirrorlist?repo=nonfree-fedora-updates-released-24&arch=x86_64 
+## core 
+repo --name=everything --baseurl=http://@install.repo.host@:@install.repo.port@/linux/releases/@fedora.version@/Workstation/@fedora.arch@/os/
+repo --name=updates --baseurl=http://@install.repo.host@:@install.repo.port@/linux/updates/@fedora.version@/@fedora.arch@/
+## rpmfusion
+repo --name=rpmfusion-free --mirrorlist=http://mirrors.rpmfusion.org/mirrorlist?repo=free-fedora-@fedora.version@&arch=@fedora.arch@ 
+repo --name=rpmfusion-free-updates --mirrorlist=http://mirrors.rpmfusion.org/mirrorlist?repo=free-fedora-updates-released-@fedora.version@&arch=@fedora.arch@ 
+repo --name=rpmfusion-nonfree --mirrorlist=http://mirrors.rpmfusion.org/mirrorlist?repo=nonfree-fedora-@fedora.version@&arch=@fedora.arch@ 
+repo --name=rpmfusion-nonfree-updates --mirrorlist=http://mirrors.rpmfusion.org/mirrorlist?repo=nonfree-fedora-updates-released-@fedora.version@&arch=@fedora.arch@ 
 
 # Partition clearing information
 clearpart --all --initlabel
