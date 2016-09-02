@@ -111,6 +111,7 @@ htop
 virt-manager
 virt-install
 virt-viewer
+syslinux
 
 #misc
 tomboy

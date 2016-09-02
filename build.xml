@@ -44,4 +44,14 @@
   <copy file="install-src.ks" tofile="${dist}/install-minimal.ks" filtering="true"/>  
 </target>
 
+<target name="build-make-iso" depends="prepare-build" description="Build the make-iso script">
+  <echo message="build the make-iso script in ${dist}"/>
+  <mkdir dir="${dist}/iso"/>
+  <copy todir="${dist}/iso" filtering="true">
+    <fileset dir="iso"/>
+  </copy>
+  <copy file="make-iso.sh" tofile="${dist}/make-iso.sh" filtering="true"/> 
+  <chmod file="${dist}/make-iso.sh" perm="755" />   
+</target> 
+
 </project>
