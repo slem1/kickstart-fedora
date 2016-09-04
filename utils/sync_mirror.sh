@@ -11,8 +11,8 @@ destination=$(echo $1 | sed 's:/$::')
 
 base_mirror=fedora.mirrors.ovh.net/download.fedora.redhat.com
 
-releases=/linux/releases/24/Workstation/x86_64/os
-updates=/linux/updates/24/x86_64
+releases=/linux/releases/24/Workstation/x86_64/os/
+updates=/linux/updates/24/x86_64/
 
 releases_destination=$destination$releases
 updates_destination=$destination$updates
