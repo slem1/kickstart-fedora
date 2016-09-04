@@ -25,7 +25,7 @@ GITKRAKEN_VERSION=@gitkraken.version@
 #Private repo
 INSTALL_REPO_HOST=@install.repo.host@
 INSTALL_REPO_PORT=@install.repo.port@
-APPS_REPO_URL=http://$INSTALL_REPO_HOST:$INSTALL_REPO_PORT/apps
+APPS_REPO_URL=http://$INSTALL_REPO_HOST:$INSTALL_REPO_PORT/repo/apps
 
 #External ressources
 URL_NVM_GIT=https://github.com/creationix/nvm.git
