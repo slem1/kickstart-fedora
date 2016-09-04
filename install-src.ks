@@ -109,6 +109,7 @@ openssh-server
 gparted
 htop
 virt-manager
+virt-install
 
 #misc
 tomboy
