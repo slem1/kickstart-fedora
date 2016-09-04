@@ -110,6 +110,7 @@ gparted
 htop
 virt-manager
 virt-install
+virt-viewer
 
 #misc
 tomboy
