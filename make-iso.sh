@@ -24,13 +24,18 @@ function usage {
   echo "-f or --force : bypass all action confirm i.e. assuming you answer yes to all script confirmation"
   echo "-d : device to write on the iso"
   echo "-w : working directory where all operations like downloading native iso and building new custom one will be done"
+  echo "-a or --additionals : directory or file to copy to the new custom iso as additional files"
   echo "--iso-only : use this if you only want to build the custom iso without writing on a device"
+  echo "--no-clean : do not clean custom iso making directory (for debugging purpose)"
 }
 
 #clean temporary stuff
 function clean {
-  echo "Cleaning $working_dir/bootisoks now"
-  rm -rf $working_dir/bootisoks
+
+  if [[ -z "$no_clean" ]]; then
+    echo "Cleaning $working_dir/bootisoks now"
+    rm -rf $working_dir/bootisoks
+  fi
 }
 
 #write on device
@@ -62,6 +67,9 @@ do
     --force) force=true;;
     -o) output="$2"; shift;;
     -w) working_dir="$2"; shift;;
+    -a) additionals="$2"; shift;;
+    --additionals) additionals="$2"; shift;;
+    --no-clean) no_clean=true;;
     *) echo "unknow option $1, exit..."; exit 1;;
   esac
   shift
@@ -115,19 +123,25 @@ fi
 echo "Begin creation of custom kickstart iso"
 
 #mount iso and create working stuff
-mkdir -p $working_dir/bootiso && mkdir -p $working_dir/bootisoks
+mkdir -p "$working_dir"/bootiso && mkdir -p "$working_dir"/bootisoks
 
-mount -o loop $working_dir/$ISO $working_dir/bootiso/
+mount -o loop "$working_dir"/"$ISO" "$working_dir"/bootiso/
 
-cp -r $working_dir/bootiso/* $working_dir/bootisoks/
+cp -r "$working_dir"/bootiso/* "$working_dir"/bootisoks/
 
-umount $working_dir/bootiso && rmdir $working_dir/bootiso
+umount "$working_dir"/bootiso && rmdir "$working_dir"/bootiso
 
-chmod -R u+w $working_dir/bootisoks/
+chmod -R u+w "$working_dir"/bootisoks/
 
 #add custom conf
 cp iso/$FEDORA_VERSION/EFI/BOOT/grub.cfg $working_dir/bootisoks/EFI/BOOT/grub.cfg  
 cp iso/$FEDORA_VERSION/isolinux/isolinux.cfg $working_dir/bootisoks/isolinux/isolinux.cfg
+
+#add additionals files to the iso if necessary
+if [[ ! -z "$additionals" ]]; then
+  mkdir "$working_dir"/bootisoks/additionals/
+  cp -r "$additionals/." "$working_dir"/bootisoks/additionals
+fi
 
 #make bootable iso from usb device
 cd $working_dir/bootisoks/
