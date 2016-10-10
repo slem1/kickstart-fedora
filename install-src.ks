@@ -1,4 +1,3 @@
-#version=DEVEL
 # System authorization information
 auth --enableshadow --passalgo=sha512
 
@@ -43,17 +42,17 @@ user --name=@user2.name@ --password=@user2.password@ --iscrypted --gecos="@user2
 xconfig  --startxonboot
 
 # System bootloader configuration
-bootloader --location=mbr 
+bootloader --location=mbr
 
 # repo
-## core 
+## core
 repo --name=everything --baseurl=http://@install.repo.host@:@install.repo.port@/repo/linux/releases/@fedora.version@/Everything/@fedora.arch@/os/
 repo --name=updates --baseurl=http://@install.repo.host@:@install.repo.port@/repo/linux/updates/@fedora.version@/@fedora.arch@/
 ## rpmfusion
-repo --name=rpmfusion-free --mirrorlist=http://mirrors.rpmfusion.org/mirrorlist?repo=free-fedora-@fedora.version@&arch=@fedora.arch@ 
-repo --name=rpmfusion-free-updates --mirrorlist=http://mirrors.rpmfusion.org/mirrorlist?repo=free-fedora-updates-released-@fedora.version@&arch=@fedora.arch@ 
-repo --name=rpmfusion-nonfree --mirrorlist=http://mirrors.rpmfusion.org/mirrorlist?repo=nonfree-fedora-@fedora.version@&arch=@fedora.arch@ 
-repo --name=rpmfusion-nonfree-updates --mirrorlist=http://mirrors.rpmfusion.org/mirrorlist?repo=nonfree-fedora-updates-released-@fedora.version@&arch=@fedora.arch@ 
+repo --name=rpmfusion-free --mirrorlist=http://mirrors.rpmfusion.org/mirrorlist?repo=free-fedora-@fedora.version@&arch=@fedora.arch@
+repo --name=rpmfusion-free-updates --mirrorlist=http://mirrors.rpmfusion.org/mirrorlist?repo=free-fedora-updates-released-@fedora.version@&arch=@fedora.arch@
+repo --name=rpmfusion-nonfree --mirrorlist=http://mirrors.rpmfusion.org/mirrorlist?repo=nonfree-fedora-@fedora.version@&arch=@fedora.arch@
+repo --name=rpmfusion-nonfree-updates --mirrorlist=http://mirrors.rpmfusion.org/mirrorlist?repo=nonfree-fedora-updates-released-@fedora.version@&arch=@fedora.arch@
 
 # Partition clearing information
 clearpart --all --initlabel
@@ -77,7 +76,7 @@ gnome-tweak-tool
 powerline
 
 #dev
-java-1.8.0-openjdk-devel 
+java-1.8.0-openjdk-devel
 postgresql-server
 postgresql-contrib
 pgadmin3
@@ -90,11 +89,11 @@ azureus
 vlc
 
 ##codecs
-gstreamer1-libav 
-gstreamer1-plugins-ugly 
-gstreamer1-plugins-good 
-gstreamer1-plugins-bad-free 
-gstreamer1-plugins-bad-freeworld 
+gstreamer1-libav
+gstreamer1-plugins-ugly
+gstreamer1-plugins-good
+gstreamer1-plugins-bad-free
+gstreamer1-plugins-bad-freeworld
 gstreamer1-vaapi
 
 #editor

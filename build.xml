@@ -5,6 +5,8 @@
 
 <!--properties-->
 <property name="dist" location="dist" />
+<property name="efi" value="make-efi.sh" />
+<property name="iso" value="make-iso.sh" />
 
 <!-- global -->
 <target name="prepare-build" description="global setup and clean">
@@ -25,9 +27,9 @@
      </filterreader>
    </filterchain>
    <filelist dir="." files="install-src.ks"/>
-   <string>%post</string>   
-   <filelist dir="." files="post-install.sh"/> 
-   <string>%end</string>   
+   <string>%post</string>
+   <filelist dir="." files="post-install.sh"/>
+   <string>%end</string>
   </concat>
 
 </target>
@@ -39,19 +41,29 @@
   <chmod file="${dist}/post-install.sh" perm="755" />
 </target>
 
-<target name="build-install-src" depends="prepare-build" description="Build the minimal kickstart file without extra-ops">
+<target name="ks-minimal" depends="prepare-build" description="Build the minimal kickstart file (no pre/post ops)">
   <echo message="build minimal kickstart file in ${dist}"/>
-  <copy file="install-src.ks" tofile="${dist}/install-minimal.ks" filtering="true"/>  
+  <copy file="install-src.ks" tofile="${dist}/install.ks" filtering="true"/>
 </target>
 
-<target name="build-make-iso" depends="prepare-build" description="Build the make-iso script">
-  <echo message="build the make-iso script in ${dist}"/>
+<target name="iso" depends="prepare-build" description="Build the make-iso script">
+  <echo message="build  make-iso script in ${dist}"/>
   <mkdir dir="${dist}/iso"/>
   <copy todir="${dist}/iso" filtering="true">
     <fileset dir="iso"/>
   </copy>
-  <copy file="make-iso.sh" tofile="${dist}/make-iso.sh" filtering="true"/> 
-  <chmod file="${dist}/make-iso.sh" perm="755" />   
-</target> 
+  <copy file="${iso}" tofile="${dist}/${iso}" filtering="true"/>
+  <chmod file="${dist}/${iso}" perm="755" />
+</target>
+
+<target name="efi" depends="prepare-build" description="Create efi media">
+  <echo message="build make-efi script in ${dist}"/>
+  <mkdir dir="${dist}/iso"/>
+  <copy todir="${dist}/iso" filtering="true">
+    <fileset dir="iso"/>
+  </copy>
+  <copy file="${efi}" tofile="${dist}/${efi}" filtering="true"/>
+  <chmod file="${dist}/${efi}" perm="755" />
+</target>
 
 </project>

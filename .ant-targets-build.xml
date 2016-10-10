@@ -1,5 +1,6 @@
 build
-build-install-src
 build-make-iso
 build-post-install
+efi
+ks-minimal
 prepare-build
