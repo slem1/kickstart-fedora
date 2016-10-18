@@ -1,6 +1,51 @@
 #!/bin/sh
 
-disk=/media/EXT4-Storage/vm/kickstart-fedora/kickstart_install.qcow2
-iso=/media/EXT4-Storage/vm/isos/Fedora-Workstation-netinst-x86_64-24-1.2.iso
+while getopts :b:m:d: opt; do
+ case "$opt" in
+   b) boot_img="$OPTARG";;
+   d) disk="$OPTARG";;
+   m) mode="$OPTARG";;
+   \?)
+    echo "invalid option $OPTARG" >&2
+    exit 1;;
+   :)
+    echo "Option -$OPTARG requires an argument" >&2
+    exit 1;;
+  esac
+done;
 
-virt-install  -n kickstart-vm --description "Testing VM for kickstart installation" --os-type=linux  --ram=1024  --vcpus=1  --disk path=$disk,bus=virtio,size=10 --cdrom $iso  --network bridge:br0 --graphics spice
+disk_size=10 #Gb
+disk_default="system_hd.img"
+nic="bridge:br0"
+name="ksvm"
+
+if [[ ! -f "$boot_img" ]]; then
+  "Missing boot image" >&2
+  exit 1
+fi
+
+if [[ -z "$mode" ]]; then
+  "Missing mode (efi or iso)" >&2
+  exit 1
+fi
+
+if [[ ! -f "$disk" ]]; then
+  disk="$disk_default"
+  echo "default disk $disk will be used for system installation"
+fi
+
+if [[ "$mode"=="efi" ]]; then
+  virt-install -n "$name" --description "kickstart vm" \
+--os-type=linux  --ram=2048  --vcpus=1 --graphics spice \
+--disk path="$boot_img",bus=usb \
+--disk path="$disk",bus=virtio,size=$disk_size \
+--network "$nic" --boot uefi
+
+else
+
+  virt-install -n "$name" --description "kickstart vm"\
+--os-type=linux  --ram=2048  --vcpus=1 --graphics spice \
+--disk path="$disk",bus=virtio,size=$disk_size \
+--cdrom "$boot_img" \
+--network "$nic" --boot cdrom
+fi

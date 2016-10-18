@@ -1,69 +1,80 @@
 <project name="kickstart-fedora" default="build">
-<description>
-  Build the kickstart fedora project
-</description>
+    <description>
+      Build the kickstart fedora project
+    </description>
 
-<!--properties-->
-<property name="dist" location="dist" />
-<property name="efi" value="make-efi.sh" />
-<property name="iso" value="make-iso.sh" />
+    <!--properties-->
+    <property name="dist" location="dist" />
+    <property name="efi" value="make-efi.sh" />
+    <property name="iso" value="make-iso.sh" />
+    <property name="create-vm" value="create-vm.sh" />
+    <property name="run-test" value="run-test.sh" />
 
-<!-- global -->
-<target name="prepare-build" description="global setup and clean">
-  <delete dir="${dist}"/>
-  <mkdir dir="${dist}" />
-  <filter filtersfile="global-conf.properties"/>
-  <filter filtersfile="user-conf.properties.private"/>
-</target>
+    <!-- global -->
+    <target name="clean" description="clean">
+      <delete dir="${dist}" />
+    </target>
 
-<!-- default -->
-<target name="build" description="Make the final kickstart file" depends="prepare-build">
-  <echo message="merge files in ${dist} directory"/>
-  <concat destfile="${dist}/install.ks" fixlastline="yes">
-   <filterchain>
-     <filterreader classname="org.apache.tools.ant.filters.ReplaceTokens">
-       <param type="propertiesfile" value="global-conf.properties"/>
-       <param type="propertiesfile" value="user-conf.properties.private"/>
-     </filterreader>
-   </filterchain>
-   <filelist dir="." files="install-src.ks"/>
-   <string>%post</string>
-   <filelist dir="." files="post-install.sh"/>
-   <string>%end</string>
-  </concat>
+    <target name="prepare-build" description="global setup">
+      <mkdir dir="${dist}" />
+      <filter filtersfile="global-conf.properties"/>
+      <filter filtersfile="user-conf.properties.private"/>
+    </target>
 
-</target>
+    <!-- default -->
+    <target name="ks" description="Make the final kickstart file" depends="prepare-build">
+      <echo message="merge files in ${dist} directory"/>
+      <concat destfile="${dist}/install.ks" fixlastline="yes">
+       <filterchain>
+         <filterreader classname="org.apache.tools.ant.filters.ReplaceTokens">
+           <param type="propertiesfile" value="global-conf.properties"/>
+           <param type="propertiesfile" value="user-conf.properties.private"/>
+         </filterreader>
+       </filterchain>
+       <filelist dir="." files="install-src.ks"/>
+       <string>%post</string>
+       <filelist dir="." files="post-install.sh"/>
+       <string>%end</string>
+      </concat>
 
-<!-- atomic builds -->
-<target name="build-post-install" description="Make the post-install script" depends="prepare-build">
-  <echo message="build post install script in ${dist}"/>
-  <copy file="post-install.sh" todir="${dist}" filtering="true"/>
-  <chmod file="${dist}/post-install.sh" perm="755" />
-</target>
+    </target>
 
-<target name="ks-minimal" depends="prepare-build" description="Build the minimal kickstart file (no pre/post ops)">
-  <echo message="build minimal kickstart file in ${dist}"/>
-  <copy file="install-src.ks" tofile="${dist}/install.ks" filtering="true"/>
-</target>
+    <!-- atomic builds -->
+    <target name="build-post-install" description="Make the post-install script" depends="prepare-build">
+      <echo message="build post install script in ${dist}"/>
+      <copy file="post-install.sh" todir="${dist}" filtering="true" overwrite="true"/>
+      <chmod file="${dist}/post-install.sh" perm="754" />
+    </target>
 
-<target name="iso" depends="prepare-build" description="Build the make-iso script">
-  <echo message="build  make-iso script in ${dist}"/>
-  <mkdir dir="${dist}/iso"/>
-  <copy todir="${dist}/iso" filtering="true">
-    <fileset dir="iso"/>
-  </copy>
-  <copy file="${iso}" tofile="${dist}/${iso}" filtering="true"/>
-  <chmod file="${dist}/${iso}" perm="755" />
-</target>
+    <target name="ks-minimal" depends="prepare-build" description="Build the minimal kickstart file (no pre/post ops)">
+      <echo message="build minimal kickstart file in ${dist}"/>
+      <copy file="install-src.ks" tofile="${dist}/install.ks" filtering="true" overwrite="true"/>
+    </target>
 
-<target name="efi" depends="prepare-build" description="Create efi media">
-  <echo message="build make-efi script in ${dist}"/>
-  <mkdir dir="${dist}/iso"/>
-  <copy todir="${dist}/iso" filtering="true">
-    <fileset dir="iso"/>
-  </copy>
-  <copy file="${efi}" tofile="${dist}/${efi}" filtering="true"/>
-  <chmod file="${dist}/${efi}" perm="755" />
-</target>
+    <target name="copy-grub-template" depends="prepare-build" description="copy grub conf template">
+      <mkdir dir="${dist}/iso"/>
+      <copy todir="${dist}/iso" filtering="true" overwrite="true">
+        <fileset dir="iso"/>
+      </copy>
+    </target>
+
+    <target name="iso" depends="copy-grub-template" description="Build the make-iso script">
+      <echo message="build  make-iso script in ${dist}"/>
+      <copy file="${iso}" tofile="${dist}/${iso}" filtering="true" overwrite="true"/>
+      <chmod file="${dist}/${iso}" perm="754" />
+    </target>
+
+    <target name="efi" depends="copy-grub-template" description="Create efi media">
+      <echo message="build make-efi script in ${dist}"/>
+      <copy file="${efi}" tofile="${dist}/${efi}" filtering="true" overwrite="true"/>
+      <chmod file="${dist}/${efi}" perm="754" />
+    </target>
+
+    <target name="build" depends="clean,ks-minimal,efi,iso">
+      <copy file="utils/${create-vm}" tofile="${dist}/${create-vm}" overwrite="true"/>
+      <copy file="${run-test}" tofile="${dist}/${run-test}" overwrite="true" filtering="true"/>
+      <chmod file="${dist}/${create-vm}" perm="754" />
+      <chmod file="${dist}/${run-test}" perm="754" />
+    </target>
 
 </project>

@@ -2,3 +2,5 @@ target/
 dist/
 *.properties.private
 *.swp
+node_modules/
+*.log
