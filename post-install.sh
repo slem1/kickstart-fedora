@@ -90,12 +90,12 @@ function home {
 
   if [[ $# -ne 1 ]]; then
     echo "Usage: $0 <user>"
-    echo "[user] = user name" 	
+    echo "[user] = user name"
     return 1
   fi
 
   if id "$1" >> /dev/null; then
-    echo $(grep "$1" /etc/passwd | cut -d: -f6)        
+    echo $(grep "$1" /etc/passwd | cut -d: -f6)
   else
     print_error "user $1 does not exist !"
     return 1
@@ -105,7 +105,7 @@ function home {
 
 #Create a gnome icon
 #gnome_icon name exec icon type categories terminal destination
-function gnome_icon {    
+function gnome_icon {
 
   if [[ $# -eq 0 || $@ == "-h" || $@ == "--help" ]]; then
     echo "Usage: $0 <name> <exec> <icon> <type> <categories> <terminal> <destination>"
@@ -118,7 +118,7 @@ function gnome_icon {
     echo "[destination] = destination path like /user/share/applications/myicon.desktop"
     return 1
   fi
-  
+
   echo "Create gnome icon for $1 into $7"
 
   cat <<-END > "$7"
@@ -330,7 +330,7 @@ function gitkraken {
 
   #uncompress
   tar -xzf "$WORKING_DIR"/gitkraken.tar.gz -C "$INSTALL_DIR"
-  
+
   if [[ $? -ne 0 ]]; then
     print_install_abort "Git Kraken"
     return 2
@@ -338,7 +338,7 @@ function gitkraken {
 
   gnome_icon "Git Kraken" "$INSTALL_DIR/GitKraken/gitkraken" "$INSTALL_DIR/GitKraken/icon.png" "Application" "Development;Utility" "false" "/usr/share/applications/gitkraken.desktop"
 
-  print_install_done "Git Kraken" 
+  print_install_done "Git Kraken"
 
 }
 
@@ -357,64 +357,6 @@ function java_conf {
   print_install_done "Java post-install configuration"
 }
 
-#Please don't use this in a none secured private (local) environment
-function copy_ssh_keys {
-
-  if [[ $# -ne 2 ]]; then
-    echo "Usage : copy_ssh_key <username> <url_for_ssh_keys>"
-    exit 1
-  fi
-
-  cd "$WORKING_DIR"
-
-  id "$1"
-
-  if [[ $? -ne 0 ]]; then
-    print_error "User $1 does not exists !"
-    return 1
-  fi
-
-  #get the user home
-  user_home="$(grep "$1" /etc/passwd | cut -d ":" -f6)"
-
-  if [[ ! -s "$user_home" ]]; then
-    print_error "No home, no ssh for $1"
-    return 2
-  fi
-
-  ssh_home="$user_home"/.ssh
-
-  mkdir -p "$ssh_home"
-
-  if [[ $? -ne 0 ]]; then
-    print_error "Error while creating ssh directory"
-  fi
-
-  #get the keys in .tar archive
-
-  curl -o keys.tar "$2"
-
-  if [[ $? -ne 0 ]]; then
-    print_download_abort "ssh keys"
-    return 3
-  fi
-
-  tar -xf keys.tar -C "$ssh_home"
-
-   if [[ $? -ne 0 ]]; then
-    print_install_abort "ssh keys"
-    return 4
-  fi
-
-  chown -R "$1":"$1" "$ssh_home" && chmod -R 600 "$ssh_home"
-
-  chmod 700 "$ssh_home"
-
-  print_install_done "ssh keys"
-
-}
-
-
 #install powerline conf for user
 function powerline_conf {
 
@@ -422,8 +364,8 @@ function powerline_conf {
 
   echo "$title install"
 
-  if [[ $# -ne 1 ]]; then 
-    echo "Usage: powerline_conf <user>"	
+  if [[ $# -ne 1 ]]; then
+    echo "Usage: powerline_conf <user>"
     echo "[user]= User for which we want install the powerline configuration"
   fi
 
@@ -432,21 +374,21 @@ function powerline_conf {
   if [[ ! -z $home_path ]]; then
 
     powerline_home="$home_path"/.config/powerline
-    
+
     cd "$WORKING_DIR" && curl -o powerline-conf.tar.gz "$URL_POWERLINE_CONF"
 
     if [[ $? -ne 0 ]]; then
       print_download_abort "$title"
       return 2
-    fi 
+    fi
 
     if [[ -d "$powerline_home" ]]; then
       rm -rf "$powerline_home"
-    fi     
+    fi
 
     if [[ ! -d "$home_path"/.config ]]; then
-     mkdir "$home_path"/.config && chown "$1":"$1" "$home_path"/.config && chmod -R 700 "$home_path"/.config   
-    fi     
+     mkdir "$home_path"/.config && chown "$1":"$1" "$home_path"/.config && chmod -R 700 "$home_path"/.config
+    fi
 
     tar -xf powerline-conf.tar.gz -C "$home_path"/.config && chown -R "$1":"$1" "$powerline_home" && chmod -R 700 "$powerline_home"
 
@@ -466,21 +408,21 @@ function powerline_conf {
 END
 
     print_install_done "$title"
-            
+
   else
-    print_error "An error occured while retrieving home for $1"	
+    print_error "An error occured while retrieving home for $1"
     return 1
   fi
 
 }
 
 function cleanup {
-  
+
   rm -rf "$WORKING_DIR"
 
   exec 1<&-
 
-  exec 2<&-  
+  exec 2<&-
 
 }
 
@@ -515,9 +457,6 @@ java_conf
 
 idea
 
-copy_ssh_keys @user1.name@ "http://$INSTALL_REPO_HOST:$INSTALL_REPO_PORT/special/keys.tar"
-
 powerline_conf @user1.name@
 
 cleanup
-
