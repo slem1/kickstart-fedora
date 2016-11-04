@@ -138,7 +138,7 @@ function esp_format {
     exit 1
   fi
 
-  if ! (mkfs.vfat "$partition" && mlabel -i "$partition" ::FEDORA_KS && mkdir -p "$mount_point" && mount "$partition" "$mount_point"); then
+  if ! (mkfs.vfat "$partition" && mkdir -p "$mount_point" && mount "$partition" "$mount_point"); then
     echo "An error occured while format and mount ESP $partition on $mount_point"
     exit 1
   fi
