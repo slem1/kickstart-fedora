@@ -18,7 +18,7 @@ function _term {
 
 ./make-efi.sh -w . -o boot.img
 
-python3 -m http.server @install.repo.port@ --bind=@install.repo.host@ &
+python3 -m http.server @ks.port@ --bind=@ks.host@ &
 
 server_pid=$!
 

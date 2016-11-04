@@ -6,8 +6,7 @@ graphical
 
 # Use http server Installation media
 install
-#url fallback --url=http://fedora.mirrors.ovh.net/linux/releases/@fedora.version@/Everything/@fedora.arch@/os/
-url --url=http://@install.repo.host@:@install.repo.port@/repo/linux/releases/@fedora.version@/Everything/@fedora.arch@/os/
+url --url=http://@install.repo.host@:@install.repo.port@/linux/releases/@fedora.version@/Everything/@fedora.arch@/os/
 
 # Run the Setup Agent on first boot
 firstboot --enable
@@ -46,8 +45,8 @@ bootloader --location=mbr
 
 # repo
 ## core
-repo --name=everything --baseurl=http://@install.repo.host@:@install.repo.port@/repo/linux/releases/@fedora.version@/Everything/@fedora.arch@/os/
-repo --name=updates --baseurl=http://@install.repo.host@:@install.repo.port@/repo/linux/updates/@fedora.version@/@fedora.arch@/
+repo --name=everything --baseurl=http://@install.repo.host@:@install.repo.port@/linux/releases/@fedora.version@/Everything/@fedora.arch@/os/
+repo --name=updates --baseurl=http://@install.repo.host@:@install.repo.port@/linux/updates/@fedora.version@/@fedora.arch@/
 ## rpmfusion
 repo --name=rpmfusion-free --mirrorlist=http://mirrors.rpmfusion.org/mirrorlist?repo=free-fedora-@fedora.version@&arch=@fedora.arch@
 repo --name=rpmfusion-free-updates --mirrorlist=http://mirrors.rpmfusion.org/mirrorlist?repo=free-fedora-updates-released-@fedora.version@&arch=@fedora.arch@

@@ -17,12 +17,16 @@
 
     <target name="prepare-build" description="global setup">
       <mkdir dir="${dist}" />
+      <available property="hasUserConf" file="user-conf.properties.private" type="file" />
       <filter filtersfile="global-conf.properties"/>
+    </target>
+
+    <target name="set-filters" description="setFilter" depends="prepare-build" if="${hasUserConf}">
       <filter filtersfile="user-conf.properties.private"/>
     </target>
 
     <!-- default -->
-    <target name="ks" description="Make the final kickstart file" depends="prepare-build">
+    <target name="ks" description="Make the final kickstart file" depends="set-filters">
       <echo message="merge files in ${dist} directory"/>
       <concat destfile="${dist}/install.ks" fixlastline="yes">
        <filterchain>
@@ -40,18 +44,18 @@
     </target>
 
     <!-- atomic builds -->
-    <target name="build-post-install" description="Make the post-install script" depends="prepare-build">
+    <target name="build-post-install" description="Make the post-install script" depends="set-filters">
       <echo message="build post install script in ${dist}"/>
       <copy file="post-install.sh" todir="${dist}" filtering="true" overwrite="true"/>
       <chmod file="${dist}/post-install.sh" perm="754" />
     </target>
 
-    <target name="ks-minimal" depends="prepare-build" description="Build the minimal kickstart file (no pre/post ops)">
+    <target name="ks-minimal" depends="set-filters" description="Build the minimal kickstart file (no pre/post ops)">
       <echo message="build minimal kickstart file in ${dist}"/>
       <copy file="install-src.ks" tofile="${dist}/install.ks" filtering="true" overwrite="true"/>
     </target>
 
-    <target name="copy-grub-template" depends="prepare-build" description="copy grub conf template">
+    <target name="copy-grub-template" depends="set-filters" description="copy grub conf template">
       <mkdir dir="${dist}/iso"/>
       <copy todir="${dist}/iso" filtering="true" overwrite="true">
         <fileset dir="iso"/>
