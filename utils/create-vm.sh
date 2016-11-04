@@ -14,7 +14,7 @@ while getopts :b:m:d: opt; do
   esac
 done;
 
-disk_size=10 #Gb
+disk_size=12 #Gb
 disk_default="system_hd.img"
 nic="bridge:br0"
 name="ksvm"
