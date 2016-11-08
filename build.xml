@@ -58,7 +58,7 @@
     <target name="copy-grub-template" depends="set-filters" description="copy grub conf template">
       <mkdir dir="${dist}/iso"/>
       <copy todir="${dist}/iso" filtering="true" overwrite="true">
-        <fileset dir="iso"/>
+        <fileset dir="templates/iso"/>
       </copy>
     </target>
 
