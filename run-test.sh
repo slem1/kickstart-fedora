@@ -5,38 +5,59 @@ if [[ ! $EUID -eq 0 ]]; then
   exit 1
 fi
 
-set -e
+clean=false
 
 trap "_term" EXIT TERM INT
 
 function _term {
 
+if [[ $clean == false ]]; then
   origin=$?
   virsh list --all | grep -qs ksvm
+  ksvm=$?
 
-  if [[ ! $origin -eq 0 && $? -eq 0 ]]; then
+  if [[ ! $origin -eq 0 && $ksvm -eq 0 ]]; then
+    #Destroy vm on error
     echo "Destroy and undefine ksvm domain"
-    virsh destroy ksvm 2> /dev/null && virsh undefine ksvm 2> /dev/null
-  else
+    virsh destroy ksvm 2> /dev/null ; virsh undefine ksvm 2> /dev/null
+  elif [[ $ksvm -eq 0 ]]; then
+    #Ask for destroy and undefine on success
     read -p "Do you want to destroy and undefine ksvm domain: (n)" -n 1 answer
     case "$answer" in
-      y|Y) virsh destroy ksvm 2> /dev/null && virsh undefine ksvm 2> /dev/null;;
+      y|Y) virsh destroy ksvm 2> /dev/null ; virsh undefine ksvm 2> /dev/null;;
     esac
   fi
 
-  echo "Terminate http server..."
-  kill -TERM $server_pid 2> /dev/null
+  if [[ ! -z $server_pid ]]; then
+    echo "Terminate http server..."
+    kill -TERM $server_pid 2> /dev/null
+  fi
+    
   echo "Exiting..."
-  exit 0
+  clean=true
+  exit $origin
+fi
 }
 
 ./make-efi.sh -w . -o boot.img
 
+if [[ ! $? -eq 0 ]]; then
+  exit 1
+fi
+
 python3 -m http.server @ks.port@ --bind=@ks.host@ &
+
+if [[ ! $? -eq 0 ]]; then
+  exit 1
+fi
 
 server_pid=$!
 
 ./create-vm.sh -m efi -b boot.img
+
+if [[ ! $? -eq 0 ]]; then
+  exit 1
+fi
 
 echo "Press ctrl-C to stop"
 
