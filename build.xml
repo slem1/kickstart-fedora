@@ -75,7 +75,7 @@
     </target>
 
     <target name="build" depends="clean,ks-minimal,efi,iso">
-      <copy file="utils/${create-vm}" tofile="${dist}/${create-vm}" overwrite="true"/>
+      <copy file="${create-vm}" tofile="${dist}/${create-vm}" overwrite="true" filtering="true"/>
       <copy file="${run-test}" tofile="${dist}/${run-test}" overwrite="true" filtering="true"/>
       <chmod file="${dist}/${create-vm}" perm="754" />
       <chmod file="${dist}/${run-test}" perm="754" />

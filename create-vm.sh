@@ -14,9 +14,9 @@ while getopts :b:m:d: opt; do
   esac
 done;
 
-disk_size=12 #Gb
+disk_size=@vm.disk.size@ #Gb
 disk_default="system_hd.img"
-nic="bridge:br0"
+nic="bridge:@vm.bridge@"
 name="ksvm"
 
 if [[ ! -f "$boot_img" ]]; then
