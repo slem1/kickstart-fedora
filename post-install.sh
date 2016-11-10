@@ -336,7 +336,7 @@ function gitkraken {
     return 2
   fi
 
-  gnome_icon "Git Kraken" "$INSTALL_DIR/GitKraken/gitkraken" "$INSTALL_DIR/GitKraken/icon.png" "Application" "Development;Utility" "false" "/usr/share/applications/gitkraken.desktop"
+  gnome_icon "Git Kraken" "$INSTALL_DIR/gitkraken/gitkraken" "$INSTALL_DIR/gitkraken/icon.png" "Application" "Development;Utility" "false" "/usr/share/applications/gitkraken.desktop"
 
   print_install_done "Git Kraken"
 
