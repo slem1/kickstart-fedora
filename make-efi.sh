@@ -204,6 +204,8 @@ if [[ $# -eq 0 || $@ == '-h' || $@ == '--help' ]]; then
   exit 1
 fi
 
+working_dir=.
+
 while [[ $# -gt 0 ]];
 do
   case "$1" in
@@ -253,7 +255,9 @@ else
 
   echo "Virtual disk file mode"
 
-  confirm "All data on file $output will be erased"
+  if [[ -f "$output" ]]; then
+      confirm "All data on file $output will be erased"
+  fi
 
   download_iso_and_mount "$working_dir" "$working_dir"/bootiso/
 
