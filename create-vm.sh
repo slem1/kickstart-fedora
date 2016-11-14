@@ -35,7 +35,7 @@ if [[ ! -f "$disk" ]]; then
 fi
 
 if virsh list --all | grep -qs ksvm; then
-  virsh destroy ksvm 2> /dev/null && virsh undefine ksvm 2> /dev/null
+  virsh destroy ksvm 2> /dev/null ; virsh undefine ksvm
 fi
 
 if [[ "$mode"=="efi" ]]; then
