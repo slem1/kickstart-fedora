@@ -38,7 +38,7 @@ if virsh list --all | grep -qs ksvm; then
   virsh destroy ksvm 2> /dev/null ; virsh undefine ksvm
 fi
 
-if [[ "$mode"=="efi" ]]; then
+if [[ "$mode" == "efi" ]]; then
   virt-install -n "$name" --description "kickstart vm" \
 --os-type=linux  --ram=2048  --vcpus=1 --graphics spice \
 --disk path="$boot_img",bus=usb \
