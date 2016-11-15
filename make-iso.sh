@@ -23,6 +23,7 @@ function usage {
   echo "options :"
   echo "-f or --force : bypass all action confirm i.e. assuming you answer yes to all script confirmation"
   echo "-d : device to write on the iso"
+  echo "-o : iso output file path"
   echo "-w : working directory where all operations like downloading native iso and building new custom one will be done"
   echo "-a or --additionals : directory or file to copy to the new custom iso as additional files"
   echo "--iso-only : use this if you only want to build the custom iso without writing on a device"
@@ -91,6 +92,12 @@ if [[ "$iso_only" != true && -z "$device" ]]; then
   exit 1
 fi
 
+if [[ -z "$output" ]]; then
+  echo -e "Please specify an output iso file \n"
+  usage
+  exit 1
+fi
+
 if [[ -z "$working_dir" ]]; then
   working_dir=.
 fi
@@ -152,12 +159,14 @@ if [[ ! -z "$additionals" ]]; then
   cp -r "$additionals/." "$working_dir"/bootisoks/additionals
 fi
 
+root_dir=$(pwd)
+
 #make bootable iso from usb device
-cd $working_dir/bootisoks/
+cd "$working_dir"/bootisoks/
 
 xorriso -as mkisofs -U -A "$VOLUME" -V "$VOLUME" -volset "$VOLUME" \
     -J -joliet-long -r -v -x ./lost+found \
-    -o $working_dir/fedora_boot.iso \
+    -o "$working_dir"/fedora_boot.iso \
     -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 \
     -boot-info-table -eltorito-alt-boot -e images/efiboot.img -isohybrid-mbr /usr/share/syslinux/isohdpfx.bin -no-emul-boot \
     .
@@ -167,23 +176,29 @@ if [[ $? -ne 0 ]]; then
   exit 1
 fi
 
+cd "$root_dir" && mv "$working_dir"/bootisoks/fedora_boot.iso "$output"
+
+if [[ $? -ne 0 ]]; then
+  echo "Error while moving iso to $output, abort..."
+  exit 1
+fi
 
 if [[ "$iso_only" = true ]]; then
-  echo "iso image $working_dir/fedora_boot.iso is available"
+  echo "iso image $output is available"
   clean
   exit
 fi
 
 if [[ "$force" = true ]]; then
- write_on_device $working_dir/fedora_boot.iso "$device"
+ write_on_device "$output" "$device"
 else
   while true; do
     read -p "All data on $device will be wiped out, are you sure ?" yn
     case $yn in
-      [yY]*) write_on_device $working_dir/fedora_boot.iso "$device"
+      [yY]*) write_on_device "$output" "$device"
              break;;
       [nN]*)
-             echo "Iso image is available $working_dir/fedora_boot.iso"
+             echo "Iso image is available $output"
              exit;;
       *) echo "Please answer yes or no";;
     esac
