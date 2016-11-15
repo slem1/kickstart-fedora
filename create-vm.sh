@@ -5,6 +5,10 @@ if ! virt-install --version > /dev/null 2>&1; then
   exit 1
 fi
 
+if ! virt-viewer --version > /dev/null 2>&1; then
+  echo "virt-viewer is not installed, abort..."
+  exit 1
+fi
 
 while getopts :b:m:d: opt; do
  case "$opt" in
