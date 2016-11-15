@@ -5,6 +5,11 @@ if [[ ! $EUID -eq 0 ]]; then
   exit 1
 fi
 
+if ! python3 --version > /dev/null 2>&1; then
+  echo "python3 must be installed, abort..."
+  exit 1
+fi
+
 clean=false
 
 trap "_term" EXIT TERM INT

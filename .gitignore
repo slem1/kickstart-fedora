@@ -4,3 +4,5 @@ dist/
 *.swp
 node_modules/
 *.log
+*.img
+*.iso

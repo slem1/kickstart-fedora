@@ -19,7 +19,7 @@ FEDORA_FINGERPRINT=@fedora.fingerprint@
 function usage {
   echo "Usage : $0 -d <device> -w <working_dir>"
   echo "Requirements :"
-  echo "This command requires the following pacakges : xorriso, syslinux"
+  echo "This command requires the following packages : xorriso, syslinux"
   echo "options :"
   echo "-f or --force : bypass all action confirm i.e. assuming you answer yes to all script confirmation"
   echo "-d : device to write on the iso"
@@ -33,14 +33,14 @@ function usage {
 function clean {
 
   if [[ -z "$no_clean" ]]; then
-    echo "Cleaning $working_dir/bootisoks now"
-    rm -rf $working_dir/bootisoks
+    echo "Cleaning $working_dir/bootisoks"
+    rm -rf "$working_dir"/bootisoks
   fi
 }
 
 #write on device
 #e.g. write_on_device if of
-function write_on_device {  
+function write_on_device {
   echo "write $1 on $2"
   dd if="$1" bs=2048 of="$2"
   echo "Iso writing done on $2"
@@ -56,6 +56,16 @@ fi
 if [[ $# -eq 0 || $@ == '-h' || $@ == '--help' ]]; then
   usage
   exit
+fi
+
+if ! xorriso --version > /dev/null 2>&1; then
+  echo "xorriso is not installed, abort..."
+  exit 1
+fi
+
+if ! syslinux --version > /dev/null 2>&1; then
+  echo "syslinux is not installed, abort..."
+  exit 1
 fi
 
 while [[ $# -gt 0 ]];
@@ -76,21 +86,20 @@ do
 done
 
 if [[ "$iso_only" != true && -z "$device" ]]; then
-  echo -e "Please specify a target device\n"
+  echo -e "Please specify a target device or --iso-only option \n"
   usage
   exit 1
 fi
 
-if [[ -z "$working_dir" ]]; then 
-  working_dir="/tmp"
+if [[ -z "$working_dir" ]]; then
+  working_dir=.
 fi
-
 
 #Get ISO & Checksum
 if [[ -f $working_dir/$ISO ]]; then
-  echo 'The iso has already been downloaded, skip downloading...'
+  echo 'The fedora iso has already been downloaded, skip...'
 else
-  echo 'Download iso in progress...'
+  echo 'Downloading iso from $ISO_URL...'
 
   mkdir -p $working_dir
 
@@ -99,10 +108,10 @@ else
     exit 1
   fi
 
-  echo 'Validate checksum'  
-  
+  echo 'Validate checksum'
+
   #import gpg key
-  gpg --keyserver keys.fedoraproject.org --recv $FEDORA_FINGERPRINT  
+  gpg --keyserver keys.fedoraproject.org --recv $FEDORA_FINGERPRINT
 
   #download checksum
   gpg_out=$(gpg --status-fd 1 --verify-files $working_dir/$ISO_CHECKSUM 2> /dev/null)
@@ -110,7 +119,7 @@ else
   if ! echo $gpg_out | grep -qs "\[GNUPG:\] VALIDSIG $FEDORA_FINGERPRINT"; then
     echo "Invalid GPG signature for Checksum"
     exit 1
-  fi 
+  fi
 
   if ! (cd $working_dir && sha256sum -c --quiet --status $ISO_CHECKSUM); then
     echo "Wrong checksum, exit..."
@@ -118,7 +127,7 @@ else
   fi
 
   echo 'Base fedora iso available in $working_dir'
-fi 
+fi
 
 echo "Begin creation of custom kickstart iso"
 
@@ -134,7 +143,7 @@ umount "$working_dir"/bootiso && rmdir "$working_dir"/bootiso
 chmod -R u+w "$working_dir"/bootisoks/
 
 #add custom conf
-cp iso/$FEDORA_VERSION/EFI/BOOT/grub.cfg $working_dir/bootisoks/EFI/BOOT/grub.cfg  
+cp iso/$FEDORA_VERSION/EFI/BOOT/grub.cfg $working_dir/bootisoks/EFI/BOOT/grub.cfg
 cp iso/$FEDORA_VERSION/isolinux/isolinux.cfg $working_dir/bootisoks/isolinux/isolinux.cfg
 
 #add additionals files to the iso if necessary
@@ -158,25 +167,25 @@ if [[ $? -ne 0 ]]; then
   exit 1
 fi
 
+
 if [[ "$iso_only" = true ]]; then
   echo "iso image $working_dir/fedora_boot.iso is available"
   clean
   exit
 fi
 
-if [[ "$force" = true ]]; then  
- write_on_device $working_dir/fedora_boot.iso $device
-else  
+if [[ "$force" = true ]]; then
+ write_on_device $working_dir/fedora_boot.iso "$device"
+else
   while true; do
     read -p "All data on $device will be wiped out, are you sure ?" yn
     case $yn in
-      [yY]*) write_on_device $working_dir/fedora_boot.iso $device
+      [yY]*) write_on_device $working_dir/fedora_boot.iso "$device"
              break;;
-      [nN]*) 
-             echo "Iso is available $working_dir/fedora_boot.iso" 
+      [nN]*)
+             echo "Iso image is available $working_dir/fedora_boot.iso"
              exit;;
       *) echo "Please answer yes or no";;
     esac
   done
 fi
-

@@ -42,9 +42,9 @@ function download_iso {
   fi
 
   if [[ -f "$download_dir"/$ISO ]]; then
-    echo 'The iso has already been downloaded, skip downloading...'
+    echo 'The fedora iso has already been downloaded, skip...'
   else
-    echo 'Download iso in progress...'
+    echo 'Downloading iso from $ISO_URL...'
 
     if ! (cd "$download_dir" && curl -O $ISO_URL && curl -O $ISO_CHECKSUM_URL ); then
       echo "Download error, exit..."

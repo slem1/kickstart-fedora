@@ -1,10 +1,11 @@
 #!/bin/sh
-#author slemonk
+#author slemoine
 
-if [[ -z "$1" ]]; then
+if [[ ! -d "$1" ]]; then
   echo "Missing target directory"
   echo "Usage sync_mirror.sh [destination]"
   echo "Example : ./sync_mirror.sh /media/data"
+  exit 1
 fi
 
 destination=$(echo $1 | sed 's:/$::')
@@ -19,7 +20,7 @@ updates_destination=$destination$updates
 
 echo $releases_dest
 
-##releases 
+##releases
 echo "Begin mirroring in $destination"
 mkdir -p $releases_destination
 rsync -av rsync://$base_mirror$releases --exclude=drpms $releases_destination
