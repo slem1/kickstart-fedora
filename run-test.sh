@@ -24,12 +24,12 @@ if [[ $clean == false ]]; then
   if [[ ! $origin -eq 0 && $ksvm -eq 0 ]]; then
     #Destroy vm on error
     echo "Destroy and undefine ksvm domain"
-    virsh destroy ksvm 2> /dev/null ; virsh undefine ksvm 2> /dev/null
+    virsh destroy ksvm 2> /dev/null ; virsh undefine ksvm --nvram 2> /dev/null
   elif [[ $ksvm -eq 0 ]]; then
     #Ask for destroy and undefine on success
     read -p "Do you want to destroy and undefine ksvm domain: (n)" -n 1 answer
-    case "$answer" in
-      y|Y) virsh destroy ksvm 2> /dev/null ; virsh undefine ksvm 2> /dev/null;;
+    case "$answer" in      
+      y|Y) echo ; virsh destroy ksvm 2> /dev/null ; virsh undefine ksvm --nvram 2> /dev/null;;
     esac
   fi
 
