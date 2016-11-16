@@ -104,9 +104,9 @@ fi
 
 #Get ISO & Checksum
 if [[ -f $working_dir/$ISO ]]; then
-  echo 'The fedora iso has already been downloaded, skip...'
+  echo "The fedora iso has already been downloaded, skip..."
 else
-  echo 'Downloading iso from $ISO_URL...'
+  echo "Downloading iso from $ISO_URL..."
 
   mkdir -p $working_dir
 
