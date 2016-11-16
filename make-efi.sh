@@ -233,7 +233,7 @@ fi
 set -e
 
 if [[ -b "$output" ]]; then
-  echo "Block device mode"
+  echo "Create efi device"
 
   confirm "All data on device $output will be erased"
 
@@ -253,7 +253,7 @@ if [[ -b "$output" ]]; then
 
 else
 
-  echo "Virtual disk file mode"
+  echo "Create efi disk image"
 
   if [[ -f "$output" ]]; then
       confirm "All data on file $output will be erased"

@@ -21,6 +21,8 @@ if [[ $clean == false ]]; then
   virsh list --all | grep -qs ksvm
   ksvm=$?
 
+  echo 
+
   if [[ ! $origin -eq 0 && $ksvm -eq 0 ]]; then
     #Destroy vm on error
     echo "Destroy and undefine ksvm domain"
@@ -64,7 +66,7 @@ if [[ ! $? -eq 0 ]]; then
   exit 1
 fi
 
-echo "Press ctrl-C to stop"
+echo -E "Press ctrl-C to stop\n"
 
 while true; do
   sleep 1
