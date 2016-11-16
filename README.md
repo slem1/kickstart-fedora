@@ -172,7 +172,7 @@ The run-test.sh script is a straightforward combination of all the scripts descr
 
 - Create an efi bootable virtual disk called boot.img in your current directory (through make-efi.sh).
 - Create an http server bind to the ks.host:ks.port address (through python3 http server).
-- Create a guest domain and runs the vm installation (through create-vm.sh).
+- Create a guest domain and run the vm installation (through create-vm.sh).
 
 ```
 sudo ./run-test.sh
