@@ -42,7 +42,7 @@ function clean {
 #write on device
 #e.g. write_on_device if of
 function write_on_device {
-  echo "write $1 on $2"
+  echo "writing $1 on $2, please wait..."
   dd if="$1" bs=2048 of="$2"
   echo "Iso writing done on $2"
 }
