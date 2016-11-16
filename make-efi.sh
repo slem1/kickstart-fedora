@@ -239,8 +239,6 @@ if [[ -b "$output" ]]; then
 
   download_iso_and_mount "$working_dir" "$working_dir"/bootiso/
 
-  umount "$output"?*
-
   esp_create "$output"
 
   esp="$output"1
