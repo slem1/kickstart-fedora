@@ -449,7 +449,7 @@ nodejs_global
 
 atom
 
-#atom_plugins @user1.name@
+atom_plugins @user1.name@
 
 gitkraken
 
@@ -457,6 +457,6 @@ java_conf
 
 idea
 
-#powerline_conf @user1.name@
+powerline_conf @user1.name@
 
 cleanup

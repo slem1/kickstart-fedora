@@ -53,17 +53,6 @@ repo --name=rpmfusion-free-updates --mirrorlist=http://mirrors.rpmfusion.org/mir
 repo --name=rpmfusion-nonfree --mirrorlist=http://mirrors.rpmfusion.org/mirrorlist?repo=nonfree-fedora-@fedora.version@&arch=@fedora.arch@
 repo --name=rpmfusion-nonfree-updates --mirrorlist=http://mirrors.rpmfusion.org/mirrorlist?repo=nonfree-fedora-updates-released-@fedora.version@&arch=@fedora.arch@
 
-# Partition clearing information and auto-partitioning
-# Please do not use this in production unless you know what you are doing
-clearpart --all --initlabel
-autopart --type=plain
-
-#after installation complete
-reboot --kexec
-
-#for vm only
-services --enabled=sshd
-
 #Package selection
 
 %packages
