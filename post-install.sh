@@ -14,32 +14,32 @@ WORKING_DIR=/var/kickstart-tmp
 INSTALL_DIR=/opt
 
 #Versions
-FEDORA_VERSION=@@fedora.version@@
-IDEA_VERSION=@@idea.verion@@
-PLEX_VERSION=@@plex.version@@
-ATOM_VERSION=@@atom.version@@
-ATOM_PLUGINS_VERSION=@@atom.plugins.version@@
-NVM_VERSION=@@nvm.version@@
-GITKRAKEN_VERSION=@@gitkraken.version@@
+FEDORA_VERSION=@fedora.version@
+IDEA_VERSION=@idea.version@
+PLEX_VERSION=@plex.version@
+ATOM_VERSION=@atom.version@
+ATOM_PLUGINS_VERSION=@atom.plugins.version@
+NVM_VERSION=@nvm.version@
+GITKRAKEN_VERSION=@gitkraken.version@
 
 #Private repo
-LOCAL_REPO_HOST=@@local.repo.host@@
-LOCAL_REPO_PORT=@@local.repo.port@@
-APP_REPO_URL=http://$LOCAL_REPO_HOST:$LOCAL_REPO_PORT/apps
+INSTALL_REPO_HOST=@ks.host@
+INSTALL_REPO_PORT=@ks.port@
+APPS_REPO_URL=http://$INSTALL_REPO_HOST:$INSTALL_REPO_PORT/apps
 
 #External ressources
 URL_NVM_GIT=https://github.com/creationix/nvm.git
 
 #Apps private repo ressources
-URL_NVM=$APP_REPO_URL/nvm/$NVM_VERSION/install.sh
-URL_RPMFUSION_FREE=$APP_REPO_URL/rpmfusion/$FEDORA_VERSION/rpmfusion-free-release-$FEDORA_VERSION.noarch.rpm
-URL_RPMFUSION_NONFREE=$APP_REPO_URL/rpmfusion/$FEDORA_VERSION/rpmfusion-nonfree-release-$FEDORA_VERSION.noarch.rpm
-URL_PLEX=$APP_REPO_URL/plex/$PLEX_VERSION/plex.rpm
-URL_ATOM=$APP_REPO_URL/atom/$ATOM_VERSION/atom.rpm
-URL_ATOM_PLUGINS=$APP_REPO_URL/atom-plugins/$ATOM_PLUGINS_VERSION/atom-plugins.tgz
-URL_IDEA=$APP_REPO_URL/idea/$IDEA_VERSION/idea.tar.gz
-URL_GITKRAKEN=$APP_REPO_URL/gitkraken/$GITKRAKEN_VERSION/gitkraken.tar.gz
-URL_POWERLINE_CONF=$APP_REPO_URL/powerline/conf/powerline-conf.tar.gz
+URL_NVM=$APPS_REPO_URL/nvm/$NVM_VERSION/install.sh
+URL_RPMFUSION_FREE=$APPS_REPO_URL/rpmfusion/$FEDORA_VERSION/rpmfusion-free-release-$FEDORA_VERSION.noarch.rpm
+URL_RPMFUSION_NONFREE=$APPS_REPO_URL/rpmfusion/$FEDORA_VERSION/rpmfusion-nonfree-release-$FEDORA_VERSION.noarch.rpm
+URL_PLEX=$APPS_REPO_URL/plex/$PLEX_VERSION/plex.rpm
+URL_ATOM=$APPS_REPO_URL/atom/$ATOM_VERSION/atom.rpm
+URL_ATOM_PLUGINS=$APPS_REPO_URL/atom-plugins/$ATOM_PLUGINS_VERSION/atom-plugins.tgz
+URL_IDEA=$APPS_REPO_URL/idea/$IDEA_VERSION/idea.tar.gz
+URL_GITKRAKEN=$APPS_REPO_URL/gitkraken/$GITKRAKEN_VERSION/gitkraken.tar.gz
+URL_POWERLINE_CONF=$APPS_REPO_URL/powerline/conf/powerline-conf.tar.gz
 
 #Misc
 JAVA_HOME=/usr/lib/jvm/java-openjdk/bin
@@ -90,12 +90,12 @@ function home {
 
   if [[ $# -ne 1 ]]; then
     echo "Usage: $0 <user>"
-    echo "[user] = user name" 	
+    echo "[user] = user name"
     return 1
   fi
 
   if id "$1" >> /dev/null; then
-    echo $(grep "$1" /etc/passwd | cut -d: -f6)        
+    echo $(grep "$1" /etc/passwd | cut -d: -f6)
   else
     print_error "user $1 does not exist !"
     return 1
@@ -105,7 +105,7 @@ function home {
 
 #Create a gnome icon
 #gnome_icon name exec icon type categories terminal destination
-function gnome_icon {    
+function gnome_icon {
 
   if [[ $# -eq 0 || $@ == "-h" || $@ == "--help" ]]; then
     echo "Usage: $0 <name> <exec> <icon> <type> <categories> <terminal> <destination>"
@@ -118,7 +118,7 @@ function gnome_icon {
     echo "[destination] = destination path like /user/share/applications/myicon.desktop"
     return 1
   fi
-  
+
   echo "Create gnome icon for $1 into $7"
 
   cat <<-END > "$7"
@@ -330,15 +330,15 @@ function gitkraken {
 
   #uncompress
   tar -xzf "$WORKING_DIR"/gitkraken.tar.gz -C "$INSTALL_DIR"
-  
+
   if [[ $? -ne 0 ]]; then
     print_install_abort "Git Kraken"
     return 2
   fi
 
-  gnome_icon "Git Kraken" "$INSTALL_DIR/GitKraken/gitkraken" "$INSTALL_DIR/GitKraken/icon.png" "Application" "Development;Utility" "false" "/usr/share/applications/gitkraken.desktop"
+  gnome_icon "Git Kraken" "$INSTALL_DIR/gitkraken/gitkraken" "$INSTALL_DIR/gitkraken/icon.png" "Application" "Development;Utility" "false" "/usr/share/applications/gitkraken.desktop"
 
-  print_install_done "Git Kraken" 
+  print_install_done "Git Kraken"
 
 }
 
@@ -357,64 +357,6 @@ function java_conf {
   print_install_done "Java post-install configuration"
 }
 
-#Please don't use this in a none secured private (local) environment
-function copy_ssh_keys {
-
-  if [[ $# -ne 2 ]]; then
-    echo "Usage : copy_ssh_key <username> <url_for_ssh_keys>"
-    exit 1
-  fi
-
-  cd "$WORKING_DIR"
-
-  id "$1"
-
-  if [[ $? -ne 0 ]]; then
-    print_error "User $1 does not exists !"
-    return 1
-  fi
-
-  #get the user home
-  user_home="$(grep "$1" /etc/passwd | cut -d ":" -f6)"
-
-  if [[ ! -s "$user_home" ]]; then
-    print_error "No home, no ssh for $1"
-    return 2
-  fi
-
-  ssh_home="$user_home"/.ssh
-
-  mkdir -p "$ssh_home"
-
-  if [[ $? -ne 0 ]]; then
-    print_error "Error while creating ssh directory"
-  fi
-
-  #get the keys in .tar archive
-
-  curl -o keys.tar "$2"
-
-  if [[ $? -ne 0 ]]; then
-    print_download_abort "ssh keys"
-    return 3
-  fi
-
-  tar -xf keys.tar -C "$ssh_home"
-
-   if [[ $? -ne 0 ]]; then
-    print_install_abort "ssh keys"
-    return 4
-  fi
-
-  chown -R "$1":"$1" "$ssh_home" && chmod -R 600 "$ssh_home"
-
-  chmod 700 "$ssh_home"
-
-  print_install_done "ssh keys"
-
-}
-
-
 #install powerline conf for user
 function powerline_conf {
 
@@ -422,8 +364,8 @@ function powerline_conf {
 
   echo "$title install"
 
-  if [[ $# -ne 1 ]]; then 
-    echo "Usage: powerline_conf <user>"	
+  if [[ $# -ne 1 ]]; then
+    echo "Usage: powerline_conf <user>"
     echo "[user]= User for which we want install the powerline configuration"
   fi
 
@@ -432,21 +374,21 @@ function powerline_conf {
   if [[ ! -z $home_path ]]; then
 
     powerline_home="$home_path"/.config/powerline
-    
+
     cd "$WORKING_DIR" && curl -o powerline-conf.tar.gz "$URL_POWERLINE_CONF"
 
     if [[ $? -ne 0 ]]; then
       print_download_abort "$title"
       return 2
-    fi 
+    fi
 
     if [[ -d "$powerline_home" ]]; then
       rm -rf "$powerline_home"
-    fi     
+    fi
 
     if [[ ! -d "$home_path"/.config ]]; then
-     mkdir "$home_path"/.config && chown "$1":"$1" "$home_path"/.config && chmod -R 700 "$home_path"/.config   
-    fi     
+     mkdir "$home_path"/.config && chown "$1":"$1" "$home_path"/.config && chmod -R 700 "$home_path"/.config
+    fi
 
     tar -xf powerline-conf.tar.gz -C "$home_path"/.config && chown -R "$1":"$1" "$powerline_home" && chmod -R 700 "$powerline_home"
 
@@ -466,21 +408,21 @@ function powerline_conf {
 END
 
     print_install_done "$title"
-            
+
   else
-    print_error "An error occured while retrieving home for $1"	
+    print_error "An error occured while retrieving home for $1"
     return 1
   fi
 
 }
 
 function cleanup {
-  
+
   rm -rf "$WORKING_DIR"
 
   exec 1<&-
 
-  exec 2<&-  
+  exec 2<&-
 
 }
 
@@ -507,7 +449,7 @@ nodejs_global
 
 atom
 
-atom_plugins @@user1.name@@
+atom_plugins @user1.name@
 
 gitkraken
 
@@ -515,9 +457,6 @@ java_conf
 
 idea
 
-copy_ssh_keys @@user1.name@@ "http://$LOCAL_REPO_HOST:$LOCAL_REPO_PORT/special/keys.tar"
-
-powerline_conf @@user1.name@@
+powerline_conf @user1.name@
 
 cleanup
-

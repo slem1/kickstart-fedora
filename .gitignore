@@ -1,3 +1,8 @@
 target/
 dist/
-*.properties
+*.properties.private
+*.swp
+node_modules/
+*.log
+*.img
+*.iso
